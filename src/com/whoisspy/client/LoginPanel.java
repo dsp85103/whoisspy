@@ -57,14 +57,11 @@ public class LoginPanel extends JPanel {
         loginBtn.setSize(370, 50);
         loginBtn.setFont(defaultFont);
 
-        forgotPasswordLabel = new JLabel("忘記密碼");
+        forgotPasswordLabel = new JLabel("<html><u>忘記密碼</u></html>");
         forgotPasswordLabel.setLocation(130, 220);
         forgotPasswordLabel.setSize(100,30);
         forgotPasswordLabel.setFont(new Font(fontName, Font.BOLD, 14));
         forgotPasswordLabel.setForeground(Color.WHITE);
-        Map forgotPwdAttributes = forgotPasswordLabel.getFont().getAttributes();
-        forgotPwdAttributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-        forgotPasswordLabel.setFont(forgotPasswordLabel.getFont().deriveFont(forgotPwdAttributes));
         forgotPasswordLabel.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -92,14 +89,11 @@ public class LoginPanel extends JPanel {
             }
         });
 
-        signUpLabel = new JLabel("點我免費註冊");
+        signUpLabel = new JLabel("<html><u>點我免費註冊</u></html>");
         signUpLabel.setLocation(410, 220);
         signUpLabel.setSize(100,30);
         signUpLabel.setFont(new Font(fontName, Font.BOLD, 14));
         signUpLabel.setForeground(Color.WHITE);
-        Map signupAttributes = signUpLabel.getFont().getAttributes();
-        signupAttributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-        signUpLabel.setFont(signUpLabel.getFont().deriveFont(signupAttributes));
         signUpLabel.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
