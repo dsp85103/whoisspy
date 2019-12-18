@@ -58,7 +58,9 @@ public class Client {
     }
 
     public ActionListener loginActionListener = e -> {
-
+        LoginPanel loginPanel = new LoginPanel();
+        initFrame.setContentBodyPanel(loginPanel);
+        initFrame.setCaptionText("歡迎回來");
     };
 
     public ActionListener signUpActionListener = e -> {

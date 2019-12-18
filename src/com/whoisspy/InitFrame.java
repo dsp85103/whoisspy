@@ -69,8 +69,19 @@ public class InitFrame extends JFrame {
         contentPanel.add(captionPanel, BorderLayout.NORTH);
     }
 
+    private JPanel currentContentBodyPanel;
     public void setContentBodyPanel(JPanel bodyPanel) {
+
+        if (currentContentBodyPanel != null) {
+            contentPanel.remove(currentContentBodyPanel);
+        }
         contentPanel.add(bodyPanel, BorderLayout.CENTER);
+        currentContentBodyPanel = bodyPanel;
+        revalidate();
     }
 
+    public void setCaptionText(String captionText) {
+        contentCaptionLable.setText(captionText);
+        revalidate();
+    }
 }
