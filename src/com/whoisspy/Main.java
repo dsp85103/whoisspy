@@ -24,14 +24,8 @@ public class Main {
 //        }
 
         try {
-            UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (UnsupportedLookAndFeelException e) {
+            UIManager.setLookAndFeel("com.jtattoo.plaf.acryl.AcrylLookAndFeel");
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
 

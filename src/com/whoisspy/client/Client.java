@@ -7,6 +7,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class Client {
 
@@ -20,7 +25,9 @@ public class Client {
 
     public Client(String title, String version) {
 
-        initFrame = new InitFrame("誰是臥底", "0.0.1");
+        initFrame = new InitFrame(title, version);
+        this.title = title;
+        this.version = version;
 
         JPanel bodyPanel = new JPanel();
         bodyPanel.setLayout(null);
@@ -59,7 +66,52 @@ public class Client {
     };
 
     public ActionListener aboutAppActionListener = e -> {
+        String sb = "<html>" +
+                "誰是臥底 Who is spy<br>" +
+                "Author：B10609011 徐儀翔<br>" +
+                "Email：b10609011@gapps.ntust.edu.tw<br>" +
+                "Runtime version：" + version + "<br>" +
+                "Git：<a href=\"https://github.com/dsp85103/whoisspy\">https://github.com/dsp85103/whoisspy</a><br>" +
+                "License：MIT License<br>" +
+                "</html>";
+        JLabel aboutAppLabel = new JLabel(sb);
+        aboutAppLabel.setFont(new Font(fontName, Font.BOLD, 12));
+        aboutAppLabel.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (Desktop.isDesktopSupported()) {
+                    try {
+                        Desktop.getDesktop().browse(new URI("https://github.com/dsp85103/whoisspy"));
+                    } catch (IOException | URISyntaxException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    System.out.println("Open browser error.");
+                }
+            }
 
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
+
+        JOptionPane.showMessageDialog(initFrame, aboutAppLabel, title, JOptionPane.INFORMATION_MESSAGE);
     };
 
     public void Start() {
