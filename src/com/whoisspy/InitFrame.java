@@ -4,6 +4,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -50,8 +52,8 @@ public class InitFrame extends JFrame {
 
     public void initContentPanel() {
         contentPanel = new JPanel();
-        contentPanel.setSize(640,540);
         contentPanel.setLocation(410,30);
+        contentPanel.setSize(640,540);
 //        contentPanel.setBackground(Color.RED);
         BorderLayout contentBorderLayout = new BorderLayout();
         contentPanel.setLayout(contentBorderLayout);

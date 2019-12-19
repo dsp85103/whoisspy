@@ -4,7 +4,7 @@ import com.whoisspy.InitFrame;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 
 public class LoginPanel extends JPanel {
@@ -21,11 +21,8 @@ public class LoginPanel extends JPanel {
     private Font defaultFont = new Font(fontName, Font.BOLD, 16);
     private Font labelFont = new Font(fontName, Font.BOLD, 25);
 
-    private InitFrame mainFrame;
-
-    public LoginPanel(InitFrame initFrame) {
+    public LoginPanel(ActionListener loginBtnActionListener, MouseListener forgotPasswordLabelMouseListener, MouseListener signUpLabelMouseListener) {
         super();
-        mainFrame = initFrame;
         setLayout(null);
         setBackground(Color.BLACK);
 
@@ -58,6 +55,7 @@ public class LoginPanel extends JPanel {
         loginBtn.setLocation(130, 165);
         loginBtn.setSize(370, 50);
         loginBtn.setFont(defaultFont);
+        loginBtn.addActionListener(loginBtnActionListener);
 
         Font smallLabelFont = new Font(fontName, Font.BOLD, 14);
         forgotPasswordLabel = new JLabel("<html><u>忘記密碼</u></html>");
@@ -65,66 +63,14 @@ public class LoginPanel extends JPanel {
         forgotPasswordLabel.setSize(100,30);
         forgotPasswordLabel.setFont(smallLabelFont);
         forgotPasswordLabel.setForeground(Color.WHITE);
-        forgotPasswordLabel.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                mainFrame.setCaptionText("修改密碼");
-                ModifyPasswordPanel ModifyPasswordPanel = new ModifyPasswordPanel();
-                mainFrame.setContentBodyPanel(ModifyPasswordPanel);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
+        forgotPasswordLabel.addMouseListener(forgotPasswordLabelMouseListener);
 
         signUpLabel = new JLabel("<html><u>點我免費註冊</u></html>");
         signUpLabel.setLocation(410, 220);
         signUpLabel.setSize(100,30);
         signUpLabel.setFont(smallLabelFont);
         signUpLabel.setForeground(Color.WHITE);
-        signUpLabel.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
+        signUpLabel.addMouseListener(signUpLabelMouseListener);
 
         add(accountLabel);
         add(accountTextField);

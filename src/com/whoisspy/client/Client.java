@@ -4,6 +4,7 @@ import com.whoisspy.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -14,9 +15,7 @@ import java.net.URISyntaxException;
 public class Client {
 
     private InitFrame initFrame;
-    private JButton loginBtn;
-    private JButton signUpBtn;
-    private JButton aboutAppBtn;
+
     private String title;
     private String version;
     private String fontName = "微軟正黑體";
@@ -27,45 +26,96 @@ public class Client {
         this.title = title;
         this.version = version;
 
-        JPanel bodyPanel = new JPanel();
-        bodyPanel.setLayout(null);
-        bodyPanel.setBackground(Color.BLACK);
+        JButton goHomeBtn = new JButton("首頁");
+        goHomeBtn.setLocation(320,30);
+        goHomeBtn.setSize(80,35);
+        goHomeBtn.addActionListener(goHomeBtnActionListener);
+        initFrame.add(goHomeBtn);
 
-        loginBtn = new JButton("登入");
-        loginBtn.setFont(new Font(fontName, Font.BOLD, 18));
-        loginBtn.setLocation(235,100);
-        loginBtn.setSize(175,40);
-        loginBtn.addActionListener(loginActionListener);
-
-        signUpBtn = new JButton("免費註冊");
-        signUpBtn.setFont(new Font(fontName, Font.BOLD, 18));
-        signUpBtn.setLocation(235,150);
-        signUpBtn.setSize(175,40);
-        signUpBtn.addActionListener(signUpActionListener);
-
-        aboutAppBtn = new JButton("關於我們");
-        aboutAppBtn.setFont(new Font(fontName, Font.BOLD, 18));
-        aboutAppBtn.setLocation(235,200);
-        aboutAppBtn.setSize(175,40);
-        aboutAppBtn.addActionListener(aboutAppActionListener);
-
-        bodyPanel.add(loginBtn);
-        bodyPanel.add(signUpBtn);
-        bodyPanel.add(aboutAppBtn);
-        initFrame.setContentBodyPanel(bodyPanel);
+        setupHomePanel();
     }
 
-    public ActionListener loginActionListener = e -> {
+    public void setupHomePanel() {
+        HomePanel homePanel = new HomePanel(homeLoginBtnActionListener, homeSignUpBtnActionListener, homeAboutAppBtnActionListener);
+        initFrame.setCaptionText("誰是臥底");
+        initFrame.setContentBodyPanel(homePanel);
+    }
+
+    public ActionListener loginBtnActionListener = e -> {
+
+    };
+
+    public ActionListener sendModifyBtnActionListener = e -> {
+
+    };
+
+    public MouseListener forgotPasswordLabelMouseListener = new MouseListener() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            initFrame.setCaptionText("修改密碼");
+            ModifyPasswordPanel ModifyPasswordPanel = new ModifyPasswordPanel(sendModifyBtnActionListener);
+            initFrame.setContentBodyPanel(ModifyPasswordPanel);
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+    };
+
+    public MouseListener signUpLabelMouseListener = new MouseListener() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+    };
+
+    public ActionListener homeLoginBtnActionListener = e -> {
         initFrame.setCaptionText("歡迎回來");
-        LoginPanel loginPanel = new LoginPanel(initFrame);
+        LoginPanel loginPanel = new LoginPanel(loginBtnActionListener, forgotPasswordLabelMouseListener, signUpLabelMouseListener);
         initFrame.setContentBodyPanel(loginPanel);
     };
 
-    public ActionListener signUpActionListener = e -> {
+    public ActionListener homeSignUpBtnActionListener = e -> {
 
     };
 
-    public ActionListener aboutAppActionListener = e -> {
+    public ActionListener homeAboutAppBtnActionListener = e -> {
         String sb = "<html>" +
                 "誰是臥底 Who is spy<br>" +
                 "Author：B10609011 徐儀翔<br>" +
@@ -113,6 +163,9 @@ public class Client {
 
         JOptionPane.showMessageDialog(initFrame, aboutAppLabel, title, JOptionPane.INFORMATION_MESSAGE);
     };
+
+    public ActionListener goHomeBtnActionListener = e -> setupHomePanel();
+
 
     public void Start() {
         initFrame.setVisible(true);

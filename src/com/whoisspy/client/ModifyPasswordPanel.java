@@ -2,6 +2,7 @@ package com.whoisspy.client;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class ModifyPasswordPanel extends JPanel {
 
@@ -14,18 +15,21 @@ public class ModifyPasswordPanel extends JPanel {
     private JPasswordField newPasswdPwdField;
     private JPasswordField confirmPasswdPwdField;
     private JButton sendModifyBtn;
-    private JLabel loginLabel;
 
     private String fontName = "微軟正黑體";
     private Font defaultFont = new Font(fontName, Font.BOLD, 16);
     private Font labelFont = new Font(fontName, Font.BOLD, 25);
     private Font smallLabelFont = new Font(fontName, Font.BOLD, 14);
 
-    public ModifyPasswordPanel() {
+    public ModifyPasswordPanel(ActionListener sendModifyBtnActionListener) {
         super();
 
         setLayout(null);
         setBackground(Color.BLACK);
+
+        JButton goHomeBtn = new JButton("回首頁");
+        goHomeBtn.setLocation(410,30);
+        goHomeBtn.setSize(80,35);
 
         accountLabel = new JLabel("帳　　號：");
         accountLabel.setLocation(80,80);
@@ -81,6 +85,7 @@ public class ModifyPasswordPanel extends JPanel {
         sendModifyBtn.setLocation(320,265);
         sendModifyBtn.setSize(180,50);
         sendModifyBtn.setFont(labelFont);
+        sendModifyBtn.addActionListener(sendModifyBtnActionListener);
 
 
         add(accountLabel);
