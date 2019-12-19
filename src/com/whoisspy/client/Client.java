@@ -37,8 +37,7 @@ public class Client {
 
     public void setupHomePanel() {
         HomePanel homePanel = new HomePanel(homeLoginBtnActionListener, homeSignUpBtnActionListener, homeAboutAppBtnActionListener);
-        initFrame.setCaptionText("誰是臥底");
-        initFrame.setContentBodyPanel(homePanel);
+        initFrame.setContentBodyPanel("誰是臥底", homePanel);
     }
 
     public ActionListener loginBtnActionListener = e -> {
@@ -54,7 +53,7 @@ public class Client {
         public void mouseClicked(MouseEvent e) {
             initFrame.setCaptionText("修改密碼");
             ModifyPasswordPanel ModifyPasswordPanel = new ModifyPasswordPanel(sendModifyBtnActionListener);
-            initFrame.setContentBodyPanel(ModifyPasswordPanel);
+            initFrame.setContentBodyPanel("修改密碼", ModifyPasswordPanel);
         }
 
         @Override
@@ -106,13 +105,13 @@ public class Client {
     };
 
     public ActionListener homeLoginBtnActionListener = e -> {
-        initFrame.setCaptionText("歡迎回來");
         LoginPanel loginPanel = new LoginPanel(loginBtnActionListener, forgotPasswordLabelMouseListener, signUpLabelMouseListener);
-        initFrame.setContentBodyPanel(loginPanel);
+        initFrame.setContentBodyPanel("歡迎回來", loginPanel);
     };
 
     public ActionListener homeSignUpBtnActionListener = e -> {
-
+        SignUpPanel signUpPanel = new SignUpPanel();
+        initFrame.setContentBodyPanel("免費註冊", signUpPanel);
     };
 
     public ActionListener homeAboutAppBtnActionListener = e -> {

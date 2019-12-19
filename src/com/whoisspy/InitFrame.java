@@ -72,8 +72,8 @@ public class InitFrame extends JFrame {
     }
 
     private JPanel currentContentBodyPanel;
-    public void setContentBodyPanel(JPanel bodyPanel) {
-
+    public void setContentBodyPanel(String captionText, JPanel bodyPanel) {
+        setCaptionText(captionText);
         if (currentContentBodyPanel != null) {
             contentPanel.remove(currentContentBodyPanel);
         }
@@ -84,6 +84,6 @@ public class InitFrame extends JFrame {
 
     public void setCaptionText(String captionText) {
         contentCaptionLable.setText(captionText);
-        revalidate();
+//        revalidate();
     }
 }
