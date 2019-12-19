@@ -1,13 +1,11 @@
 package com.whoisspy.client;
 
-import com.whoisspy.JPanel;
+import com.whoisspy.InitFrame;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.font.TextAttribute;
-import java.util.Map;
 
 public class LoginPanel extends JPanel {
 
@@ -20,23 +18,27 @@ public class LoginPanel extends JPanel {
     private JLabel signUpLabel;
 
     private String fontName = "微軟正黑體";
-    private Font defaultFont = new Font(fontName, Font.BOLD, 25);
+    private Font defaultFont = new Font(fontName, Font.BOLD, 16);
+    private Font labelFont = new Font(fontName, Font.BOLD, 25);
 
-    public LoginPanel() {
+    private InitFrame mainFrame;
+
+    public LoginPanel(InitFrame initFrame) {
         super();
+        mainFrame = initFrame;
         setLayout(null);
         setBackground(Color.BLACK);
 
         accountLabel = new JLabel("帳號：");
         accountLabel.setLocation(130,80);
         accountLabel.setSize(75,25);
-        accountLabel.setFont(defaultFont);
+        accountLabel.setFont(labelFont);
         accountLabel.setForeground(Color.WHITE);
 
         passwordLabel = new JLabel("密碼：");
         passwordLabel.setLocation(130,120);
         passwordLabel.setSize(75,25);
-        passwordLabel.setFont(defaultFont);
+        passwordLabel.setFont(labelFont);
         passwordLabel.setForeground(Color.WHITE);
 
         accountTextField = new JTextField();
@@ -57,15 +59,18 @@ public class LoginPanel extends JPanel {
         loginBtn.setSize(370, 50);
         loginBtn.setFont(defaultFont);
 
+        Font smallLabelFont = new Font(fontName, Font.BOLD, 14);
         forgotPasswordLabel = new JLabel("<html><u>忘記密碼</u></html>");
         forgotPasswordLabel.setLocation(130, 220);
         forgotPasswordLabel.setSize(100,30);
-        forgotPasswordLabel.setFont(new Font(fontName, Font.BOLD, 14));
+        forgotPasswordLabel.setFont(smallLabelFont);
         forgotPasswordLabel.setForeground(Color.WHITE);
         forgotPasswordLabel.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-
+                mainFrame.setCaptionText("修改密碼");
+                ModifyPasswordPanel ModifyPasswordPanel = new ModifyPasswordPanel();
+                mainFrame.setContentBodyPanel(ModifyPasswordPanel);
             }
 
             @Override
@@ -92,7 +97,7 @@ public class LoginPanel extends JPanel {
         signUpLabel = new JLabel("<html><u>點我免費註冊</u></html>");
         signUpLabel.setLocation(410, 220);
         signUpLabel.setSize(100,30);
-        signUpLabel.setFont(new Font(fontName, Font.BOLD, 14));
+        signUpLabel.setFont(smallLabelFont);
         signUpLabel.setForeground(Color.WHITE);
         signUpLabel.addMouseListener(new MouseListener() {
             @Override

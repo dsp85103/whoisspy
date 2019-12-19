@@ -29,7 +29,6 @@ public class Main {
             e.printStackTrace();
         }
 
-
         Client client = new Client("誰是臥底", "0.0.1");
         client.Start();
     }

@@ -1,11 +1,9 @@
 package com.whoisspy.client;
 
 import com.whoisspy.*;
-import com.whoisspy.JPanel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -58,9 +56,9 @@ public class Client {
     }
 
     public ActionListener loginActionListener = e -> {
-        LoginPanel loginPanel = new LoginPanel();
-        initFrame.setContentBodyPanel(loginPanel);
         initFrame.setCaptionText("歡迎回來");
+        LoginPanel loginPanel = new LoginPanel(initFrame);
+        initFrame.setContentBodyPanel(loginPanel);
     };
 
     public ActionListener signUpActionListener = e -> {
