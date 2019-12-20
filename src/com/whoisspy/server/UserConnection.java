@@ -221,7 +221,7 @@ public class UserConnection extends Thread {
                                 and(eq("account",account),eq("email", email)),
                                 new Document("$set", new Document("password", newPwd)));
 
-                        if (updateResult.getModifiedCount() != 0L) {
+                        if (updateResult.getModifiedCount() > 0L) {
                             // 修改密碼成功
 
                             logger.log(String.format("%s modify password successful", account));
@@ -252,6 +252,19 @@ public class UserConnection extends Thread {
                             send(returnMessage);
                         }
 
+                    } else {
+                        // account or email warn
+                        logger.log(String.format("%s modify password failure", account));
+                        JsonObject returnData = new JsonObject();
+                        returnData.addProperty("account", account);
+                        Message returnMessage = new Message(
+                                Message.OP.modifypwd,
+                                Message.Status.failure,
+                                String.format("%s 修改密碼失敗！帳號或信箱輸入錯誤！", account),
+                                returnData.toString()
+                        );
+
+                        send(returnMessage);
                     }
                 }
                 break;
