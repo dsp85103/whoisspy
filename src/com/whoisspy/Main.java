@@ -33,6 +33,7 @@ public class Main {
         Client client = new Client("誰是臥底", "0.0.1");
         client.Start();
 
-        Server server = new Server();
+        Server server = new Server(15566);
+        server.start();
     }
 }

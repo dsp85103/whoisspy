@@ -4,8 +4,12 @@ public class Server {
 
     private SocketServer socketServer;
 
-    public Server() {
-        socketServer = new SocketServer(15566);
+    public Server(int port) {
+        socketServer = new SocketServer(port);
+
+    }
+
+    public void start() {
         socketServer.start();
     }
 
