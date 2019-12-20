@@ -80,7 +80,8 @@ public class Client {
     public MouseListener signUpLabelMouseListener = new MouseListener() {
         @Override
         public void mouseClicked(MouseEvent e) {
-
+            SignUpPanel signUpPanel = new SignUpPanel();
+            initFrame.setContentBodyPanel("免費註冊", signUpPanel);
         }
 
         @Override
