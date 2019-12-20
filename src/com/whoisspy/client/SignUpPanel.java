@@ -205,7 +205,6 @@ public class SignUpPanel extends JPanel {
                 return new String(Base64.getEncoder().encode(data), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
                 return "";
             }
         } else {
