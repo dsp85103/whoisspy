@@ -21,9 +21,10 @@ public class ModifyPasswordPanel extends JPanel {
     private Font labelFont = new Font(fontName, Font.BOLD, 25);
     private Font smallLabelFont = new Font(fontName, Font.BOLD, 14);
 
-    public ModifyPasswordPanel(ActionListener sendModifyBtnActionListener) {
+    private ModifyPasswordPanelObserver modifyPasswordPanelObserver;
+    public ModifyPasswordPanel(ModifyPasswordPanelObserver modifyPasswordPanelObserver) {
         super();
-
+        this.modifyPasswordPanelObserver = modifyPasswordPanelObserver;
         setLayout(null);
         setBackground(Color.BLACK);
 
@@ -98,4 +99,9 @@ public class ModifyPasswordPanel extends JPanel {
         add(confirmPasswdPwdField);
         add(sendModifyBtn);
     }
+
+    public ActionListener sendModifyBtnActionListener = e -> {
+        modifyPasswordPanelObserver.OnClieckedModifyBtn(accountTextField.getText(),emailTextField.getText(),String.valueOf(newPasswdPwdField.getPassword()), String.valueOf(confirmPasswdPwdField.getPassword()));
+    };
+
 }

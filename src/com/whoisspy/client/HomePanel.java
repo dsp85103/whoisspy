@@ -12,8 +12,10 @@ public class HomePanel extends JPanel {
 
     private String fontName = "微軟正黑體";
 
-    public HomePanel(ActionListener loginActionListener, ActionListener signUpActionListener, ActionListener aboutAppActionListener) {
+    private HomePanelObserver homePanelObserver;
+    public HomePanel(HomePanelObserver homePanelObserver) {
         super();
+        this.homePanelObserver = homePanelObserver;
         setLayout(null);
         setBackground(Color.BLACK);
 
@@ -39,4 +41,17 @@ public class HomePanel extends JPanel {
         add(signUpBtn);
         add(aboutAppBtn);
     }
+
+
+    public ActionListener loginActionListener = e -> {
+        homePanelObserver.OnClickedLoginBtn();
+    };
+
+    public ActionListener signUpActionListener = e -> {
+        homePanelObserver.OnClickedSignUpBtn();
+    };
+
+    public ActionListener aboutAppActionListener = e -> {
+        homePanelObserver.OnClickedAboutAppBtn();
+    };
 }

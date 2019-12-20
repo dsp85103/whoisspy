@@ -1,30 +1,46 @@
 package com.whoisspy.server;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.result.UpdateResult;
 import com.whoisspy.Logger;
+import com.whoisspy.Message;
+import org.bson.Document;
 
-import java.io.File;
+import javax.print.Doc;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.net.Socket;
+import java.security.MessageDigest;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.mongodb.client.model.Filters.*;
 
 public class UserConnection extends Thread {
 
     private String TAG = "Server";
-    private String account = "UserConnection";
+    private String connectionName = "UserConnection";
     private String email;
     private Socket socket;
     private boolean isLogin = false;
+    private Gson gson = new Gson();
 
     private ObjectInputStream input;
     private ObjectOutputStream output;
 
+    private Map<String, MongoCollection<Document>> collections = new HashMap<>();
+
     private Logger logger;
+
     public UserConnection(Socket socket) {
         super();
         this.socket = socket;
 
-        logger = new Logger(TAG,account);
+        logger = new Logger(TAG, connectionName);
         try {
             input = new ObjectInputStream(socket.getInputStream());
             output = new ObjectOutputStream(socket.getOutputStream());
@@ -34,14 +50,17 @@ public class UserConnection extends Thread {
 
     }
 
+    public void addCollection(String collectionName, MongoCollection<Document> collection) {
+        collections.put(collectionName, collection);
+    }
+
     @Override
     public void run() {
         try {
             while (true) {
                 String recvMessage = (String) input.readObject();  //blocking
                 logger.log(String.format("Receiving message '%s'", recvMessage));
-                if (recvMessage.equals("exit") || recvMessage.equals("quit"))
-                {
+                if (recvMessage.equals("exit") || recvMessage.equals("quit")) {
                     close();
                     return;
                 }
@@ -63,9 +82,212 @@ public class UserConnection extends Thread {
 //        send("I received your message: " + received);
 
         // TODO 如果登入了 設定 isLogin=true, logger.setAccount(account)
+
+        Message message = gson.fromJson(received, Message.class);
+        JsonObject data = gson.fromJson(message.data, JsonObject.class);
+
+        Message.OP op = message.getOp();
+
+        switch (op) {
+
+            case login:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+
+                    String account = data.get("account").getAsString();
+                    String password = getMD5(data.get("password").getAsString());
+
+                    Document docs = collections.get("users").find(
+                            and(eq("account", account),
+                                    eq("password", password)
+                            )
+                    ).first();
+
+                    if (docs != null) {
+                        // login success
+                        logger.log(String.format("%s login successful", account));
+                        JsonObject returnData = new JsonObject();
+                        returnData.addProperty("account", docs.getString("account"));
+                        returnData.addProperty("email", docs.getString("email"));
+                        returnData.addProperty("photo", docs.getString("photo"));
+                        Message returnMessage = new Message(
+                                Message.OP.login,
+                                Message.Status.success,
+                                String.format("%s 登入成功！歡迎回來誰是臥底！", account),
+                                returnData.toString()
+                        );
+
+                        // 登入成功 修改 connection name
+                        connectionName = account;
+                        logger.setAccount(connectionName);
+
+                        send(returnMessage);
+
+                    } else {
+                        // login failure
+                        logger.log(String.format("%s login failure, account or password is warn", account));
+                        JsonObject returnData = new JsonObject();
+                        returnData.addProperty("account", account);
+                        Message returnMessage = new Message(
+                                Message.OP.login,
+                                Message.Status.failure,
+                                String.format("%s 登入失敗！原因：%s！", account, "帳號或密碼錯誤"),
+                                returnData.toString()
+                        );
+
+                        send(returnMessage);
+                    }
+                }
+
+                break;
+
+            case signup:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+
+                    String account = data.get("account").getAsString();
+                    String password = getMD5(data.get("password").getAsString());
+                    String email = data.get("email").getAsString();
+                    String photo = data.get("photo").getAsString();
+
+                    Document queryDocs = collections.get("users").find(eq("account", account)).first();
+
+                    if (queryDocs != null) {
+                        // 帳號已經存在
+
+                        //sign up failure
+                        logger.log(String.format("%s sign up failure, account already sign up.", account));
+                        JsonObject returnData = new JsonObject();
+                        returnData.addProperty("account", account);
+                        Message returnMessage = new Message(
+                                Message.OP.signup,
+                                Message.Status.failure,
+                                String.format("%s 註冊失敗！原因：%s！", account, "帳號已經存在"),
+                                returnData.toString()
+                        );
+
+                        send(returnMessage);
+
+
+                    } else {
+                        // 帳號不存在 可以註冊
+                        Document docs = new Document();
+                        docs.append("account", account);
+                        docs.append("password", password);
+                        docs.append("email", email);
+                        docs.append("photo", photo);
+
+                        collections.get("users").insertOne(docs);
+
+                        // sign up success
+                        logger.log(String.format("%s sign up successful", account));
+                        JsonObject returnData = new JsonObject();
+                        returnData.addProperty("account", docs.getString("account"));
+                        returnData.addProperty("email", docs.getString("email"));
+                        returnData.addProperty("photo", docs.getString("photo"));
+                        Message returnMessage = new Message(
+                                Message.OP.signup,
+                                Message.Status.success,
+                                String.format("%s 註冊成功！歡迎來到誰是臥底！", account),
+                                returnData.toString()
+                        );
+
+                        // 註冊成功 修改 connection name
+                        connectionName = account;
+                        logger.setAccount(connectionName);
+
+                        send(returnMessage);
+                    }
+                }
+
+                break;
+
+            case modifypwd:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+
+                    String account = data.get("account").getAsString();
+                    String email = data.get("email").getAsString();
+                    String newPwd = getMD5(data.get("newPwd").getAsString());
+
+                    Document docs = collections.get("users").find(
+                            and(eq("account",account),
+                                    eq("email", email))
+                    ).first();
+
+                    if (docs != null) {
+                        // account exist then change pwd
+                        UpdateResult updateResult = collections.get("users").updateOne(
+                                and(eq("account",account),eq("email", email)),
+                                new Document("$set", new Document("password", newPwd)));
+
+                        if (updateResult.getModifiedCount() != 0L) {
+                            // 修改密碼成功
+
+                            logger.log(String.format("%s modify password successful", account));
+                            JsonObject returnData = new JsonObject();
+                            returnData.addProperty("account", docs.getString("account"));
+                            Message returnMessage = new Message(
+                                    Message.OP.modifypwd,
+                                    Message.Status.success,
+                                    String.format("%s 修改密碼成功！請使用新密碼進行登入！", account),
+                                    returnData.toString()
+                            );
+
+                            send(returnMessage);
+
+                        } else {
+                            // 修改密碼失敗
+
+                            logger.log(String.format("%s modify password failure", account));
+                            JsonObject returnData = new JsonObject();
+                            returnData.addProperty("account", docs.getString("account"));
+                            Message returnMessage = new Message(
+                                    Message.OP.modifypwd,
+                                    Message.Status.failure,
+                                    String.format("%s 修改密碼失敗！請聯絡遊戲管理員！", account),
+                                    returnData.toString()
+                            );
+
+                            send(returnMessage);
+                        }
+
+                    }
+                }
+                break;
+        }
+    }
+
+    public String getMD5(String str) {
+        String ret = null;
+        try {
+            // 生成一個MD5加密計算摘要
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            // 計算md5函數
+            md.update(str.getBytes());
+            // digest()最後確定返回md5 hash值，返回值為8為字符串。因為md5 hash值是16位的hex值，實際上就是8位的字符
+            // BigInteger函數則將8位的字符串轉換成16位hex值，用字符串來表示；得到字符串形式的hash值
+            ret = new BigInteger(1, md.digest()).toString(16);
+        } catch (Exception e) {
+            //throw new SpeedException("MD5加密出現錯誤");
+            e.printStackTrace();
+        }
+        return ret;
     }
 
     public void send(String data) {
+        logger.log(String.format("Sending a message '%s'", data));
+        try {
+            output.writeObject(data);
+            output.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void send(Message message) {
+        String data = Message.makeMessageString(message);
+        logger.log(String.format("Sending a message '%s'", data));
         try {
             output.writeObject(data);
             output.flush();

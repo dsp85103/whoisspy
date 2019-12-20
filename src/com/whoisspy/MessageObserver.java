@@ -1,5 +1,5 @@
 package com.whoisspy;
 
 public interface MessageObserver {
-    void OnMessage(String data);
+    void OnMessage(String receivedData);
 }

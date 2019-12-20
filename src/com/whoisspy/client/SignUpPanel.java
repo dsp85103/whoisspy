@@ -8,9 +8,14 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import com.whoisspy.ImagePanel;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 public class SignUpPanel extends JPanel {
 
@@ -31,9 +36,10 @@ public class SignUpPanel extends JPanel {
     private Font labelFont = new Font(fontName, Font.BOLD, 25);
     private Font smallLabelFont = new Font(fontName, Font.BOLD, 14);
 
-
-    public SignUpPanel() {
+    private SignUpPanelObserver signUpPanelObserver;
+    public SignUpPanel(SignUpPanelObserver signUpPanelObserver) {
         super();
+        this.signUpPanelObserver = signUpPanelObserver;
         setLayout(null);
         setBackground(Color.BLACK);
 
@@ -103,6 +109,7 @@ public class SignUpPanel extends JPanel {
         signUpBtn.setLocation(440,280);
         signUpBtn.setSize(170, 50);
         signUpBtn.setFont(defaultFont);
+        signUpBtn.addActionListener(signUpBtnActionListener);
 
         add(accountLabel);
         add(emailLabel);
@@ -117,6 +124,8 @@ public class SignUpPanel extends JPanel {
         add(signUpBtn);
     }
 
+    Image selectedImage;
+    String imageFileName = "";
     public ActionListener chooseProfilePhotoActionListener = e -> {
 
         JFileChooser photoFileChooser = new JFileChooser();
@@ -130,7 +139,8 @@ public class SignUpPanel extends JPanel {
         {
             File selectedPhoto = photoFileChooser.getSelectedFile();
             try {
-                Image selectedImage = ImageIO.read(new File(selectedPhoto.getAbsolutePath()));
+                imageFileName = selectedPhoto.getAbsolutePath();
+                selectedImage = ImageIO.read(new File(imageFileName));
                 Dimension imageSize = new Dimension();
                 imageSize.setSize(selectedImage.getWidth(null), selectedImage.getHeight(null));
                 Dimension panelSize = profilePhotoPanel.getSize();
@@ -181,4 +191,25 @@ public class SignUpPanel extends JPanel {
         return new Dimension(new_width, new_height);
     }
 
+    public ActionListener signUpBtnActionListener = e -> {
+        signUpPanelObserver.OnClickedSignUpBtn(accountTextField.getText(), String.valueOf(confirmPasswdPwdField.getPassword()), emailTextField.getText(), ImageToBase64(imageFileName));
+    };
+
+    public String ImageToBase64(String imageFileName) {
+        if (!imageFileName.equals("")) {
+            try {
+                BufferedImage bImage = ImageIO.read(new File(imageFileName));
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ImageIO.write(bImage, "jpg", bos );
+                byte[] data = bos.toByteArray();
+                return new String(Base64.getEncoder().encode(data), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
 }

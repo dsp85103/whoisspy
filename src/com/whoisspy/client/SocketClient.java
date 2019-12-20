@@ -1,23 +1,21 @@
 package com.whoisspy.client;
 
 import com.whoisspy.Logger;
+import com.whoisspy.Message;
 import com.whoisspy.MessageObserver;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Scanner;
 
 public class SocketClient {
 
     private String host;
     private int port;
     private String tag = "Client";
-    private String account = "socket";
+    private String connectionName = "socket";
     private Socket socket;
     private Thread socketThread;
     private boolean isLogin = false;
@@ -31,7 +29,7 @@ public class SocketClient {
         this.messageObserver = messageObserver;
         socketThread = new Thread(() -> RunClinet(host, port));
 
-        logger = new Logger(tag, account);
+        logger = new Logger(tag, connectionName);
         socketThread.start();
 
     }
@@ -48,7 +46,7 @@ public class SocketClient {
             recv();
 
             // TODO Send 'test data'
-            send("test data");
+//            send("test data");
         } catch (IOException x) {
             x.printStackTrace();
         }
@@ -76,6 +74,17 @@ public class SocketClient {
     }
 
     public void send(String data) {
+        logger.log(String.format("Sending a message '%s'", data));
+        try {
+            output.writeObject(data);
+            output.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void send(Message message) {
+        String data = Message.makeMessageString(message);
         logger.log(String.format("Sending a message '%s'", data));
         try {
             output.writeObject(data);

@@ -4,7 +4,9 @@ import com.whoisspy.InitFrame;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 public class LoginPanel extends JPanel {
@@ -21,8 +23,10 @@ public class LoginPanel extends JPanel {
     private Font defaultFont = new Font(fontName, Font.BOLD, 16);
     private Font labelFont = new Font(fontName, Font.BOLD, 25);
 
-    public LoginPanel(ActionListener loginBtnActionListener, MouseListener forgotPasswordLabelMouseListener, MouseListener signUpLabelMouseListener) {
+    private LoginPanelObserver loginPanelObserver;
+    public LoginPanel(LoginPanelObserver loginPanelObserver) {
         super();
+        this.loginPanelObserver = loginPanelObserver;
         setLayout(null);
         setBackground(Color.BLACK);
 
@@ -80,4 +84,67 @@ public class LoginPanel extends JPanel {
         add(forgotPasswordLabel);
         add(signUpLabel);
     }
+
+    // Call login panel observer
+    public ActionListener loginBtnActionListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            loginPanelObserver.OnClickedLoginBtn(accountTextField.getText(), String.valueOf(passwordPasswdField.getPassword()));
+        }
+    };
+
+    public MouseListener forgotPasswordLabelMouseListener = new MouseListener() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            loginPanelObserver.OnClickedForgotPasswordLabel();
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+    };
+
+    public MouseListener signUpLabelMouseListener = new MouseListener() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            loginPanelObserver.OnClickedSignUpLabel();
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+    };
+
 }
