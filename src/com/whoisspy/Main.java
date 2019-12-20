@@ -1,5 +1,6 @@
 package com.whoisspy;
 import com.whoisspy.client.Client;
+import com.whoisspy.server.Server;
 
 import javax.swing.*;
 
@@ -31,5 +32,7 @@ public class Main {
 
         Client client = new Client("誰是臥底", "0.0.1");
         client.Start();
+
+        Server server = new Server();
     }
 }

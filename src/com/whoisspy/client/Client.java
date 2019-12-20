@@ -4,7 +4,6 @@ import com.whoisspy.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -20,7 +19,11 @@ public class Client {
     private String version;
     private String fontName = "微軟正黑體";
 
+    private SocketClient socketClient;
+    private Logger logger;
+
     public Client(String title, String version) {
+
 
         initFrame = new InitFrame(title, version);
         this.title = title;
@@ -33,7 +36,17 @@ public class Client {
         initFrame.add(goHomeBtn);
 
         setupHomePanel();
+
+        socketClient = new SocketClient("127.0.0.1", 15566, clientMessageObserver);
+
     }
+
+    public MessageObserver clientMessageObserver = new MessageObserver() {
+        @Override
+        public void OnMessage(String data) {
+            System.out.println("heyhey receive message: "+ data);
+        }
+    };
 
     public void setupHomePanel() {
         HomePanel homePanel = new HomePanel(homeLoginBtnActionListener, homeSignUpBtnActionListener, homeAboutAppBtnActionListener);
@@ -165,7 +178,6 @@ public class Client {
     };
 
     public ActionListener goHomeBtnActionListener = e -> setupHomePanel();
-
 
     public void Start() {
         initFrame.setVisible(true);
