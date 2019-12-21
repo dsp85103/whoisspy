@@ -18,7 +18,6 @@ public class SocketClient {
     private String connectionName = "socket";
     private Socket socket;
     private Thread socketThread;
-    private boolean isLogin = false;
     private Logger logger;
     private ObjectInputStream input;
     private ObjectOutputStream output;

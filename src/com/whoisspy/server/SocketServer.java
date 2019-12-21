@@ -12,7 +12,7 @@ import java.util.*;
 
 public class SocketServer extends Thread {
 
-    private Map<String, List<UserConnection>> rooms = new HashMap<>();
+    private Map<Integer, Room> rooms = new HashMap<>();
     private Map<String, UserConnection> lobbyClients = new HashMap<>();
     private List<UserConnection> noLoginConnections = Collections.synchronizedList(new LinkedList<>());
 
@@ -51,6 +51,9 @@ public class SocketServer extends Thread {
                 UserConnection connection = new UserConnection(connSocket);
                 connection.addCollection("users", usersCollection);
                 connection.addCollection("words", wordsCollection);
+                connection.setNoLoginUsersList(noLoginConnections);
+                connection.setLobbyClientsMap(lobbyClients);
+                connection.setRooms(rooms);
                 connection.start();
                 logger.log(String.format("Create a user connection from %s", connSocket.getRemoteSocketAddress().toString()));
                 noLoginConnections.add(connection);
@@ -59,4 +62,5 @@ public class SocketServer extends Thread {
             }
         }
     }
+
 }

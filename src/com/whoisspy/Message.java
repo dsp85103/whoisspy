@@ -7,7 +7,8 @@ public class Message {
     public enum OP {
         login,
         signup,
-        modifypwd
+        modifypwd,
+        logout
     }
 
     public enum Status {

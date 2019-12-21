@@ -18,7 +18,7 @@ public class Client {
     private InitFrame initFrame;
 
     private String tag = "Client";
-    private String account = "unknown";
+    private String connectionName = "unknown";
     private String title;
     private String version;
     private String fontName = "微軟正黑體";
@@ -27,6 +27,8 @@ public class Client {
     private SocketClient socketClient;
     private Gson gson = new Gson();
     private Logger logger;
+    private User user;
+    private boolean isLogin = false;
 
     public Client(String title, String version) {
 
@@ -34,10 +36,11 @@ public class Client {
         this.title = title;
         this.version = version;
 
-        logger = new Logger(tag, account);
+        logger = new Logger(tag, connectionName);
+
         JButton goHomeBtn = new JButton("首頁");
-        goHomeBtn.setLocation(320,30);
-        goHomeBtn.setSize(80,35);
+        goHomeBtn.setLocation(320, 30);
+        goHomeBtn.setSize(80, 35);
         goHomeBtn.addActionListener(goHomeBtnActionListener);
         initFrame.add(goHomeBtn);
 
@@ -52,6 +55,18 @@ public class Client {
         initFrame.setContentBodyPanel("誰是臥底", homePanel);
     }
 
+    private void changeLoginStatus(boolean isLogin, String connName, User user) {
+        connectionName = connName;
+        logger.setAccount(connName);
+        this.isLogin = isLogin;
+        this.user= user;
+        if (isLogin) {
+            logger.log("change connection status to login");
+        } else {
+            logger.log("change connection status to logout");
+        }
+    }
+
     private void ShowMessageBox(String msg, int messageType) {
 
         JLabel msgLabel = new JLabel(msg);
@@ -59,7 +74,6 @@ public class Client {
         JOptionPane.showMessageDialog(initFrame, msgLabel, title, messageType);
 
     }
-
 
     public MessageObserver clientMessageObserver = new MessageObserver() {
         @Override
@@ -74,13 +88,25 @@ public class Client {
 
                 case login:
 
-                    if (message.getStatus().equals(Message.Status.success)) {
+                    if (message.getStatus().equals(Message.Status.success))
+                    {
 
+                        logger.log(String.format("%s login successful", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
-                        logger.setAccount(data.get("account").getAsString());
 
-                    } else if (message.getStatus().equals(Message.Status.failure))  {
+                        user = new User(data.get("account").getAsString(),
+                                data.get("email").getAsString(),
+                                data.get("photo").getAsString()
+                        );
 
+                        //登入成功 修改狀態
+                        changeLoginStatus(true, user.getAccount(), user);
+
+                    }
+                    else if (message.getStatus().equals(Message.Status.failure))
+                    {
+
+                        logger.log(String.format("%s login failure", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.ERROR_MESSAGE);
 
                     }
@@ -88,32 +114,73 @@ public class Client {
 
                 case modifypwd:
 
-                    if (message.getStatus().equals(Message.Status.success)) {
+                    if (message.getStatus().equals(Message.Status.success))
+                    {
 
+                        logger.log(String.format("%s modify password successful", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
 
-                    } else if (message.getStatus().equals(Message.Status.failure))  {
+                        //修改成功 進行登出
+                        if (user != null) {
+                            logout();
+                        }
 
+                    }
+                    else if (message.getStatus().equals(Message.Status.failure))
+                    {
+
+                        logger.log("modify password failure");
                         ShowMessageBox(message.msg, JOptionPane.ERROR_MESSAGE);
-
                     }
 
                     break;
 
                 case signup:
 
-                    if (message.getStatus().equals(Message.Status.success)) {
+                    if (message.getStatus().equals(Message.Status.success))
+                    {
 
+                        logger.log(String.format("%s sign up successful", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
 
-                    } else if (message.getStatus().equals(Message.Status.failure))  {
+                        // 註冊成功 修改為登入狀態
+                        user = new User(data.get("account").getAsString(),
+                                data.get("email").getAsString(),
+                                data.get("photo").getAsString()
+                        );
+                        changeLoginStatus(true, user.getAccount(), user);
 
+                    }
+                    else if (message.getStatus().equals(Message.Status.failure))
+                    {
+
+                        logger.log(String.format("%s sign up failure", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.WARNING_MESSAGE);
 
                     }
 
                     break;
 
+                case logout:
+
+                    if (message.getStatus().equals(Message.Status.success))
+                    {
+
+                        logger.log(String.format("%s logout successful", data.get("account").getAsString()));
+                        ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
+
+                        //登出成功 修改為登出狀態
+                        changeLoginStatus(false, "unknown", null);
+
+                    }
+                    else if (message.getStatus().equals(Message.Status.failure))
+                    {
+
+                        logger.log(String.format("%s logout failure", data.get("account").getAsString()));
+                        ShowMessageBox(message.msg, JOptionPane.WARNING_MESSAGE);
+
+                    }
+                    break;
 
             }
         }
@@ -245,5 +312,16 @@ public class Client {
 
     public void Start() {
         initFrame.setVisible(true);
+    }
+
+    public void logout() {
+        JsonObject data = new JsonObject();
+        data.addProperty("account", user.getAccount());
+        Message message = new Message(Message.OP.logout,
+                Message.Status.process,
+                "logout",
+                data.toString());
+
+        socketClient.send(message);
     }
 }

@@ -6,16 +6,18 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.UpdateResult;
 import com.whoisspy.Logger;
 import com.whoisspy.Message;
+import com.whoisspy.User;
 import org.bson.Document;
 
-import javax.print.Doc;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.mongodb.client.model.Filters.*;
@@ -33,8 +35,14 @@ public class UserConnection extends Thread {
     private ObjectOutputStream output;
 
     private Map<String, MongoCollection<Document>> collections = new HashMap<>();
+    private Map<Integer, Room> rooms = new HashMap<>();
+    private Map<String, UserConnection> lobbyClients = new HashMap<>();
+    private List<UserConnection> noLoginUsersList = new ArrayList<>();
+    private Map<String, List<UserConnection>> lists = new HashMap<>();
 
     private Logger logger;
+
+    private User user;
 
     public UserConnection(Socket socket) {
         super();
@@ -47,11 +55,26 @@ public class UserConnection extends Thread {
         } catch (IOException x) {
             x.printStackTrace();
         }
+    }
 
+    public User getUser() {
+        return user;
     }
 
     public void addCollection(String collectionName, MongoCollection<Document> collection) {
         collections.put(collectionName, collection);
+    }
+
+    public void setNoLoginUsersList(List<UserConnection> list) {
+        noLoginUsersList = list;
+    }
+
+    public void setLobbyClientsMap(Map<String, UserConnection> map) {
+        this.lobbyClients = map;
+    }
+
+    public void setRooms(Map<Integer, Room> map) {
+        rooms = map;
     }
 
     @Override
@@ -117,13 +140,16 @@ public class UserConnection extends Thread {
                                 returnData.toString()
                         );
 
-                        // 登入成功 修改 connection name
-                        connectionName = account;
-                        logger.setAccount(connectionName);
+                        // 登入成功 修改 connection name、status
+                        user = new User(docs.getString("account"),
+                                docs.getString("email"),
+                                docs.getString("photo"));
+                        changeLoginStatus(true, docs.getString("account"), user);
 
                         send(returnMessage);
 
                     } else {
+
                         // login failure
                         logger.log(String.format("%s login failure, account or password is warn", account));
                         JsonObject returnData = new JsonObject();
@@ -138,7 +164,6 @@ public class UserConnection extends Thread {
                         send(returnMessage);
                     }
                 }
-
                 break;
 
             case signup:
@@ -188,18 +213,18 @@ public class UserConnection extends Thread {
                         Message returnMessage = new Message(
                                 Message.OP.signup,
                                 Message.Status.success,
-                                String.format("%s 註冊成功！歡迎來到誰是臥底！", account),
+                                String.format("%s 註冊成功！歡迎來到誰是臥底！請使用帳號密碼登入遊戲！", account),
                                 returnData.toString()
                         );
 
-                        // 註冊成功 修改 connection name
-                        connectionName = account;
-                        logger.setAccount(connectionName);
+
+                        // 註冊成功 修改 connection name、status
+                        user = new User(account, email, photo);
+                        changeLoginStatus(true, account, user);
 
                         send(returnMessage);
                     }
                 }
-
                 break;
 
             case modifypwd:
@@ -234,10 +259,13 @@ public class UserConnection extends Thread {
                                     returnData.toString()
                             );
 
+                            // 修改密碼成功 修改為登出狀態
+                            changeLoginStatus(false, "UserConnection", null);
+
                             send(returnMessage);
 
                         } else {
-                            // 修改密碼失敗
+                            // 修改密碼失敗 ， 也許是 密碼沒有變更
 
                             logger.log(String.format("%s modify password failure", account));
                             JsonObject returnData = new JsonObject();
@@ -245,7 +273,7 @@ public class UserConnection extends Thread {
                             Message returnMessage = new Message(
                                     Message.OP.modifypwd,
                                     Message.Status.failure,
-                                    String.format("%s 修改密碼失敗！請聯絡遊戲管理員！", account),
+                                    String.format("%s 修改密碼失敗！請聯絡遊戲管理員！error code：0x1CF66", account),
                                     returnData.toString()
                             );
 
@@ -253,6 +281,7 @@ public class UserConnection extends Thread {
                         }
 
                     } else {
+
                         // account or email warn
                         logger.log(String.format("%s modify password failure", account));
                         JsonObject returnData = new JsonObject();
@@ -268,6 +297,60 @@ public class UserConnection extends Thread {
                     }
                 }
                 break;
+
+            case logout:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+
+                    if (noLoginUsersList.remove(this)) {
+
+                        String account = data.get("account").getAsString();
+                        JsonObject returnData = new JsonObject();
+                        returnData.addProperty("account" , account);
+
+                        Message returnMessage = new Message(Message.OP.logout,
+                                Message.Status.success,
+                                String.format("%s 登出成功！期待您下次回來！", account),
+                                returnData.toString()
+                        );
+
+                        send(returnMessage);
+
+                        // 登出成功 修改狀態
+                        changeLoginStatus(false, "UserConnection", null);
+
+                    } else {
+
+                        String account = data.get("account").getAsString();
+                        JsonObject returnData = new JsonObject();
+                        returnData.addProperty("account" , account);
+
+                        Message returnMessage = new Message(Message.OP.logout,
+                                Message.Status.failure,
+                                String.format("%s 登出失敗！請稍後在試！", account),
+                                returnData.toString()
+                        );
+
+                        send(returnMessage);
+
+                    }
+
+
+                }
+                break;
+        }
+    }
+
+    public void changeLoginStatus(boolean isLogin, String connName, User user) {
+        connectionName = connName;
+        logger.setAccount(connectionName);
+        this.isLogin = isLogin;
+        this.user = user;
+        if (isLogin) {
+            logger.log("change connection status to login");
+
+        } else {
+            logger.log("change connection status to logout");
         }
     }
 
