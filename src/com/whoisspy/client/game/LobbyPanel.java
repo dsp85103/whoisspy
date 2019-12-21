@@ -24,26 +24,26 @@ public class LobbyPanel extends JPanel {
         setBackground(Color.BLACK);
 
         createRoomBtn = new JButton("創立房間");
-        createRoomBtn.setLocation(235,80);
-        createRoomBtn.setSize(165,50);
+        createRoomBtn.setLocation(235, 80);
+        createRoomBtn.setSize(165, 50);
         createRoomBtn.setFont(btnFont);
         createRoomBtn.addActionListener(createRoomBtnActionListener);
 
         listRoomBtn = new JButton("查看所有房間");
-        listRoomBtn.setLocation(235,140);
-        listRoomBtn.setSize(165,50);
+        listRoomBtn.setLocation(235, 140);
+        listRoomBtn.setSize(165, 50);
         listRoomBtn.setFont(btnFont);
         listRoomBtn.addActionListener(listRoomBtnActionListener);
 
         joinRoomBtn = new JButton("加入房間");
-        joinRoomBtn.setLocation(235,200);
-        joinRoomBtn.setSize(165,50);
+        joinRoomBtn.setLocation(235, 200);
+        joinRoomBtn.setSize(165, 50);
         joinRoomBtn.setFont(btnFont);
         joinRoomBtn.addActionListener(joinRoomBtnActionListener);
 
         profileBtn = new JButton("查看個人檔案");
-        profileBtn.setLocation(235,260);
-        profileBtn.setSize(165,50);
+        profileBtn.setLocation(235, 260);
+        profileBtn.setSize(165, 50);
         profileBtn.setFont(btnFont);
         profileBtn.addActionListener(profileRoomBtnActionListener);
 
@@ -70,9 +70,11 @@ public class LobbyPanel extends JPanel {
     public ActionListener joinRoomBtnActionListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-//            lobbyPanelObserver.OnClickedJoinRoomBtn();
+            String input = JOptionPane.showInputDialog("請輸入房間號碼");
+            lobbyPanelObserver.OnClickedJoinRoomBtn(input);
         }
     };
+
 
     public ActionListener profileRoomBtnActionListener = new ActionListener() {
         @Override
