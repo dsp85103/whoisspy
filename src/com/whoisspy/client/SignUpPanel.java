@@ -5,6 +5,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import com.whoisspy.ImageExtensions;
 import com.whoisspy.ImagePanel;
 
 import java.awt.*;
@@ -97,7 +98,6 @@ public class SignUpPanel extends JPanel {
         profilePhotoPanel.setLocation(45,80);
         profilePhotoPanel.setSize(150,200);
         profilePhotoPanel.setLayout(null);
-//        profilePhotoPanel.setBorder(BorderFactory.createEtchedBorder());
 
         chooseProfilePhotoBtn = new JButton("選擇照片");
         chooseProfilePhotoBtn.setLocation(65,300);
@@ -126,6 +126,7 @@ public class SignUpPanel extends JPanel {
 
     Image selectedImage;
     String imageFileName = "";
+
     public ActionListener chooseProfilePhotoActionListener = e -> {
 
         JFileChooser photoFileChooser = new JFileChooser();
@@ -144,7 +145,7 @@ public class SignUpPanel extends JPanel {
                 Dimension imageSize = new Dimension();
                 imageSize.setSize(selectedImage.getWidth(null), selectedImage.getHeight(null));
                 Dimension panelSize = profilePhotoPanel.getSize();
-                Dimension scaleSize = getScaledDimension(imageSize, panelSize);
+                Dimension scaleSize = ImageExtensions.getScaledDimension(imageSize, panelSize);
 
                 selectedImage = selectedImage.getScaledInstance(scaleSize.width, scaleSize.height, Image.SCALE_SMOOTH);
 
@@ -163,52 +164,11 @@ public class SignUpPanel extends JPanel {
 
     };
 
-    public static Dimension getScaledDimension(Dimension imgSize, Dimension boundary) {
-
-        int original_width = imgSize.width;
-        int original_height = imgSize.height;
-        int bound_width = boundary.width;
-        int bound_height = boundary.height;
-        int new_width = original_width;
-        int new_height = original_height;
-
-        // first check if we need to scale width
-        if (original_width > bound_width) {
-            //scale width to fit
-            new_width = bound_width;
-            //scale height to maintain aspect ratio
-            new_height = (new_width * original_height) / original_width;
-        }
-
-        // then check if we need to scale even with the new height
-        if (new_height > bound_height) {
-            //scale height to fit instead
-            new_height = bound_height;
-            //scale width to maintain aspect ratio
-            new_width = (new_height * original_width) / original_height;
-        }
-
-        return new Dimension(new_width, new_height);
-    }
-
     public ActionListener signUpBtnActionListener = e -> {
-        signUpPanelObserver.OnClickedSignUpBtn(accountTextField.getText(), String.valueOf(confirmPasswdPwdField.getPassword()), emailTextField.getText(), ImageToBase64(imageFileName));
+        signUpPanelObserver.OnClickedSignUpBtn(accountTextField.getText(),
+                String.valueOf(confirmPasswdPwdField.getPassword()),
+                emailTextField.getText(),
+                ImageExtensions.ImageToBase64(imageFileName));
     };
 
-    public String ImageToBase64(String imageFileName) {
-        if (!imageFileName.equals("")) {
-            try {
-                BufferedImage bImage = ImageIO.read(new File(imageFileName));
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                ImageIO.write(bImage, "jpg", bos );
-                byte[] data = bos.toByteArray();
-                return new String(Base64.getEncoder().encode(data), StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return "";
-            }
-        } else {
-            return "";
-        }
-    }
 }
