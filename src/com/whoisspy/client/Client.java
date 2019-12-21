@@ -383,7 +383,7 @@ public class Client {
 
         @Override
         public void OnClickedProfileBtn() {
-            ProfilePanel profilePanel = new ProfilePanel(profilePanelObserver);
+            ProfilePanel profilePanel = new ProfilePanel(profilePanelObserver, user);
             initFrame.setContentBodyPanel("個人檔案", profilePanel);
         }
     };
