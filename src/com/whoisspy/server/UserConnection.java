@@ -348,9 +348,10 @@ public class UserConnection extends Thread {
         this.user = user;
         if (isLogin) {
             logger.log("change connection status to login");
-
+            lobbyClients.put(user.getAccount(), this);
         } else {
             logger.log("change connection status to logout");
+            noLoginUsersList.add(this);
         }
     }
 
