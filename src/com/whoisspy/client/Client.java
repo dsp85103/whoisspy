@@ -3,6 +3,8 @@ package com.whoisspy.client;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.whoisspy.*;
+import com.whoisspy.client.game.LobbyPanel;
+import com.whoisspy.client.game.LobbyPanelObserver;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +25,10 @@ public class Client {
     private String version;
     private String fontName = "微軟正黑體";
     private Font messageFont = new Font(fontName, Font.PLAIN, 15);
+    private Font btnFont = new Font(fontName, Font.BOLD, 15);
+
+    private JButton goHomeBtn;
+    private JButton logoutBtn;
 
     private SocketClient socketClient;
     private Gson gson = new Gson();
@@ -38,11 +44,17 @@ public class Client {
 
         logger = new Logger(tag, connectionName);
 
-        JButton goHomeBtn = new JButton("首頁");
+        goHomeBtn = new JButton("首頁");
         goHomeBtn.setLocation(320, 30);
         goHomeBtn.setSize(80, 35);
         goHomeBtn.addActionListener(goHomeBtnActionListener);
-        initFrame.add(goHomeBtn);
+        goHomeBtn.setFont(btnFont);
+
+        logoutBtn = new JButton("登出");
+        logoutBtn.setLocation(320, 70);
+        logoutBtn.setSize(80, 35);
+        logoutBtn.addActionListener(logoutBtnActionListener);
+        logoutBtn.setFont(btnFont);
 
         setupHomePanel();
 
@@ -51,8 +63,23 @@ public class Client {
     }
 
     public void setupHomePanel() {
-        HomePanel homePanel = new HomePanel(homePanelObserver);
-        initFrame.setContentBodyPanel("誰是臥底", homePanel);
+
+        initFrame.add(goHomeBtn);
+
+        if (!isLogin) {
+            initFrame.remove(logoutBtn);
+            // not login
+            HomePanel homePanel = new HomePanel(homePanelObserver);
+            initFrame.setTitle(title + " ver " + version);
+            initFrame.setContentBodyPanel("誰是臥底", homePanel);
+        } else {
+            // was login
+            LobbyPanel lobbyPanel = new LobbyPanel(lobbyPanelObserver);
+            initFrame.add(logoutBtn);
+            initFrame.setTitle(title + " ver " + version + "  玩家：" + user.getAccount());
+            initFrame.setContentBodyPanel("誰是臥底", lobbyPanel);
+        }
+
     }
 
     private void changeLoginStatus(boolean isLogin, String connName, User user) {
@@ -65,6 +92,7 @@ public class Client {
         } else {
             logger.log("change connection status to logout");
         }
+        setupHomePanel();
     }
 
     private void ShowMessageBox(String msg, int messageType) {
@@ -121,9 +149,7 @@ public class Client {
                         ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
 
                         //修改成功 進行登出
-                        if (user != null) {
-                            logout();
-                        }
+                        changeLoginStatus(false, "unknown", null);
 
                     }
                     else if (message.getStatus().equals(Message.Status.failure))
@@ -308,7 +334,33 @@ public class Client {
 
     };
 
+    public LobbyPanelObserver lobbyPanelObserver = new LobbyPanelObserver() {
+        @Override
+        public void OnClickedCreateRoomBtn() {
+
+        }
+
+        @Override
+        public void OnClickedListRoomBtn() {
+
+        }
+
+        @Override
+        public void OnClickedJoinRoomBtn(String roomNumber) {
+
+        }
+
+        @Override
+        public void OnClickedProfileBtn() {
+
+        }
+    };
+
     public ActionListener goHomeBtnActionListener = e -> setupHomePanel();
+
+    public ActionListener logoutBtnActionListener = e -> {
+        logout();
+    };
 
     public void Start() {
         initFrame.setVisible(true);
