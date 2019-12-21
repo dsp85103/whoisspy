@@ -15,19 +15,10 @@ public class User {
     public User(String account, String email, String photobase64) {
         this.account = account;
         this.email = email;
-        this.photo = base64StringToImage(photobase64);
+        this.photo = ImageExtensions.base64StringToImage(photobase64);
     }
 
-    public Image base64StringToImage(String base64String) {
-        try {
-            byte[] bytes1 = Base64.getDecoder().decode(base64String);
-            ByteArrayInputStream bais = new ByteArrayInputStream(bytes1);
-            return ImageIO.read(bais);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+
 
     public String getAccount() {
         return account;

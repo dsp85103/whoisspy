@@ -139,26 +139,13 @@ public class SignUpPanel extends JPanel {
         if (returnValue == JFileChooser.APPROVE_OPTION)
         {
             File selectedPhoto = photoFileChooser.getSelectedFile();
-            try {
-                imageFileName = selectedPhoto.getAbsolutePath();
-                selectedImage = ImageIO.read(new File(imageFileName));
-                Dimension imageSize = new Dimension();
-                imageSize.setSize(selectedImage.getWidth(null), selectedImage.getHeight(null));
-                Dimension panelSize = profilePhotoPanel.getSize();
-                Dimension scaleSize = ImageExtensions.getScaledDimension(imageSize, panelSize);
+            imageFileName = selectedPhoto.getAbsolutePath();
 
-                selectedImage = selectedImage.getScaledInstance(scaleSize.width, scaleSize.height, Image.SCALE_SMOOTH);
+            ImagePanel imagePanel = ImageExtensions.scaleImage(selectedPhoto, profilePhotoPanel);
 
-                ImagePanel imagePanel = new ImagePanel(selectedImage);
-                imagePanel.setLocation(0, panelSize.height/2 - scaleSize.height/2);
-                imagePanel.setSize(scaleSize);
-                profilePhotoPanel.removeAll();
-                profilePhotoPanel.add(imagePanel);
-                profilePhotoPanel.revalidate();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-//            System.out.println(selectedPhoto.getAbsolutePath());
+            profilePhotoPanel.removeAll();
+            profilePhotoPanel.add(imagePanel);
+            profilePhotoPanel.revalidate();
         }
 
 

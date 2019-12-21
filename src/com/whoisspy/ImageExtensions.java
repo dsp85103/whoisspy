@@ -1,8 +1,10 @@
 package com.whoisspy;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +55,40 @@ public class ImageExtensions {
             }
         } else {
             return "";
+        }
+    }
+
+    public static Image base64StringToImage(String base64String) {
+        try {
+            byte[] bytes1 = Base64.getDecoder().decode(base64String);
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes1);
+            return ImageIO.read(bais);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static ImagePanel scaleImage(File selectedFile, JPanel destPanel) {
+
+        try {
+            String imageFileName = selectedFile.getAbsolutePath();
+            Image selectedImage = ImageIO.read(new File(imageFileName));
+            Dimension imageSize = new Dimension();
+            imageSize.setSize(selectedImage.getWidth(null), selectedImage.getHeight(null));
+            Dimension panelSize = destPanel.getSize();
+            Dimension scaleSize = getScaledDimension(imageSize, destPanel.getSize());
+
+            selectedImage = selectedImage.getScaledInstance(scaleSize.width, scaleSize.height, Image.SCALE_SMOOTH);
+
+            ImagePanel imagePanel = new ImagePanel(selectedImage);
+            imagePanel.setLocation(0, panelSize.height / 2 - scaleSize.height / 2);
+            imagePanel.setSize(scaleSize);
+
+            return imagePanel;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
