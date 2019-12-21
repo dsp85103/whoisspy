@@ -5,6 +5,8 @@ import com.google.gson.JsonObject;
 import com.whoisspy.*;
 import com.whoisspy.client.game.LobbyPanel;
 import com.whoisspy.client.game.LobbyPanelObserver;
+import com.whoisspy.client.game.ProfilePanel;
+import com.whoisspy.client.game.ProfilePanelObserver;
 
 import javax.swing.*;
 import java.awt.*;
@@ -80,6 +82,7 @@ public class Client {
             initFrame.setContentBodyPanel("誰是臥底", lobbyPanel);
         }
 
+        initFrame.repaint();
     }
 
     private void changeLoginStatus(boolean isLogin, String connName, User user) {
@@ -100,6 +103,7 @@ public class Client {
         JLabel msgLabel = new JLabel(msg);
         msgLabel.setFont(messageFont);
         JOptionPane.showMessageDialog(initFrame, msgLabel, title, messageType);
+        logger.log(msg);
 
     }
 
@@ -334,6 +338,19 @@ public class Client {
 
     };
 
+    public ProfilePanelObserver profilePanelObserver = new ProfilePanelObserver() {
+        @Override
+        public void OnClickedModifyPasswordBtn() {
+
+        }
+
+        @Override
+        public void OnClickedSaveBtn(String email, String photoBase64) {
+
+        }
+    };
+
+
     public LobbyPanelObserver lobbyPanelObserver = new LobbyPanelObserver() {
         @Override
         public void OnClickedCreateRoomBtn() {
@@ -346,13 +363,28 @@ public class Client {
         }
 
         @Override
-        public void OnClickedJoinRoomBtn(String roomNumber) {
+        public void OnClickedJoinRoomBtn(String roomNumberStr) {
+            int roomNumber = tryIntParse(roomNumberStr, 0);
+            if (roomNumber > 0) {
+                // input is a integer format
+                logger.log(String.format("Join %d room",roomNumber));
+            } else {
+                ShowMessageBox("請輸入正確的房間號碼！", JOptionPane.WARNING_MESSAGE);
+            }
+        }
 
+        public int tryIntParse(String value, int defaultValue) {
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                return defaultValue;
+            }
         }
 
         @Override
         public void OnClickedProfileBtn() {
-
+            ProfilePanel profilePanel = new ProfilePanel(profilePanelObserver);
+            initFrame.setContentBodyPanel("個人檔案", profilePanel);
         }
     };
 
