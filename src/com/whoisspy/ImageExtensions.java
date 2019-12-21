@@ -1,14 +1,18 @@
 package com.whoisspy;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Base64;
 
 public class ImageExtensions {
@@ -42,13 +46,12 @@ public class ImageExtensions {
     }
 
     public static String ImageToBase64(String imageFileName) {
+
         if (!imageFileName.equals("")) {
             try {
-                BufferedImage bImage = ImageIO.read(new File(imageFileName));
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                ImageIO.write(bImage, "jpg", bos );
-                byte[] data = bos.toByteArray();
-                return new String(Base64.getEncoder().encode(data), StandardCharsets.UTF_8);
+                File imageFile = new File(imageFileName);
+                byte[] data = Files.readAllBytes(imageFile.toPath());
+                return Base64.getEncoder().encodeToString(data);
             } catch (IOException e) {
                 e.printStackTrace();
                 return "";
@@ -57,6 +60,23 @@ public class ImageExtensions {
             return "";
         }
     }
+
+    public static String ImageToBase64(Image image) {
+        if (image != null) {
+            try {
+                BufferedImage bImage = ImageIO.read(ImageIO.createImageInputStream(image));
+                WritableRaster raster = bImage.getRaster();
+                DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+                return new String(Base64.getEncoder().encode(data.getData()), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
+
 
     public static Image base64StringToImage(String base64String) {
         try {
@@ -90,6 +110,22 @@ public class ImageExtensions {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static ImagePanel scaleImage(Image selectedImage, JPanel destPanel) {
+
+        Dimension imageSize = new Dimension();
+        imageSize.setSize(selectedImage.getWidth(null), selectedImage.getHeight(null));
+        Dimension panelSize = destPanel.getSize();
+        Dimension scaleSize = getScaledDimension(imageSize, destPanel.getSize());
+
+        selectedImage = selectedImage.getScaledInstance(scaleSize.width, scaleSize.height, Image.SCALE_SMOOTH);
+
+        ImagePanel imagePanel = new ImagePanel(selectedImage);
+        imagePanel.setLocation(0, panelSize.height / 2 - scaleSize.height / 2);
+        imagePanel.setSize(scaleSize);
+
+        return imagePanel;
     }
 
 }
