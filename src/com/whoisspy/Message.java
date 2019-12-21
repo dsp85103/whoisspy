@@ -8,7 +8,8 @@ public class Message {
         login,
         signup,
         modifypwd,
-        logout
+        logout,
+        modifyprofile
     }
 
     public enum Status {

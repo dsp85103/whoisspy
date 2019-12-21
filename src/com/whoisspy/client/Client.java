@@ -212,6 +212,32 @@ public class Client {
                     }
                     break;
 
+                case modifyprofile:
+
+                    if (message.getStatus().equals(Message.Status.success))
+                    {
+
+                        logger.log(String.format("%s modify profile successful", data.get("account").getAsString()));
+                        ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
+
+                        //修改成功 維持登入狀態 並更新 user object
+                        user.setAccount(data.get("account").getAsString());
+                        user.setEmail(data.get("email").getAsString());
+                        user.setPhoto(ImageExtensions.base64StringToImage(data.get("photo").getAsString()));
+                        changeLoginStatus(true, user.getAccount(), user);
+
+                    }
+                    else if (message.getStatus().equals(Message.Status.failure))
+                    {
+
+                        logger.log("modify profile failure");
+                        ShowMessageBox(message.msg, JOptionPane.ERROR_MESSAGE);
+
+                        // 修改失敗 但還是維持原始的登入狀態
+                        changeLoginStatus(true, user.getAccount(), user);
+
+                    }
+                    break;
             }
         }
     };
@@ -341,12 +367,23 @@ public class Client {
     public ProfilePanelObserver profilePanelObserver = new ProfilePanelObserver() {
         @Override
         public void OnClickedModifyPasswordBtn() {
-
+            ModifyPasswordPanel modifyPasswordPanel = new ModifyPasswordPanel(modifyPasswordPanelObserver);
+            initFrame.setContentBodyPanel("修改密碼", modifyPasswordPanel);
         }
 
         @Override
         public void OnClickedSaveBtn(String email, String photoBase64) {
+            JsonObject data = new JsonObject();
+            data.addProperty("account", user.getAccount());
+            data.addProperty("email", email);
+            data.addProperty("photo", photoBase64);
+            Message message = new Message(Message.OP.modifyprofile,
+                    Message.Status.process,
+                    "modifyprofile",
+                    data.toString()
+                    );
 
+            socketClient.send(message);
         }
     };
 

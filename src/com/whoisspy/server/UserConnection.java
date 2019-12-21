@@ -9,6 +9,7 @@ import com.whoisspy.Message;
 import com.whoisspy.User;
 import org.bson.Document;
 
+import javax.swing.event.DocumentListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -103,8 +104,6 @@ public class UserConnection extends Thread {
 
 //        System.out.println(String.format("processing message '%s'... ... ...", received));
 //        send("I received your message: " + received);
-
-        // TODO 如果登入了 設定 isLogin=true, logger.setAccount(account)
 
         Message message = gson.fromJson(received, Message.class);
         JsonObject data = gson.fromJson(message.data, JsonObject.class);
@@ -236,14 +235,14 @@ public class UserConnection extends Thread {
                     String newPwd = getMD5(data.get("newPwd").getAsString());
 
                     Document docs = collections.get("users").find(
-                            and(eq("account",account),
+                            and(eq("account", account),
                                     eq("email", email))
                     ).first();
 
                     if (docs != null) {
                         // account exist then change pwd
                         UpdateResult updateResult = collections.get("users").updateOne(
-                                and(eq("account",account),eq("email", email)),
+                                and(eq("account", account), eq("email", email)),
                                 new Document("$set", new Document("password", newPwd)));
 
                         if (updateResult.getModifiedCount() > 0L) {
@@ -306,7 +305,7 @@ public class UserConnection extends Thread {
 
                         String account = data.get("account").getAsString();
                         JsonObject returnData = new JsonObject();
-                        returnData.addProperty("account" , account);
+                        returnData.addProperty("account", account);
 
                         Message returnMessage = new Message(Message.OP.logout,
                                 Message.Status.success,
@@ -323,7 +322,7 @@ public class UserConnection extends Thread {
 
                         String account = data.get("account").getAsString();
                         JsonObject returnData = new JsonObject();
-                        returnData.addProperty("account" , account);
+                        returnData.addProperty("account", account);
 
                         Message returnMessage = new Message(Message.OP.logout,
                                 Message.Status.failure,
@@ -336,6 +335,77 @@ public class UserConnection extends Thread {
                     }
 
 
+                }
+                break;
+
+            case modifyprofile:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+
+                    String account = data.get("account").getAsString();
+                    String newEmail = data.get("email").getAsString();
+                    String newPhoto = data.get("photo").getAsString();
+
+                    Document docs = collections.get("users").find(eq("account", account)).first();
+
+                    if (docs != null) {
+                        // account exist then change data
+                        Document changeDocument = new Document();
+                        changeDocument.append("email", newEmail);
+                        changeDocument.append("photo", newPhoto);
+
+                        UpdateResult updateResult = collections.get("users").updateOne(
+                                eq("account", account),
+                                new Document("$set", changeDocument));
+
+                        if (updateResult.getModifiedCount() > 0L) {
+                            // 修改資料成功
+
+                            logger.log(String.format("%s modify profile successful", account));
+                            JsonObject returnData = new JsonObject();
+                            returnData.addProperty("account", account);
+                            returnData.addProperty("email", newEmail);
+                            returnData.addProperty("photo", newPhoto);
+                            Message returnMessage = new Message(
+                                    Message.OP.modifyprofile,
+                                    Message.Status.success,
+                                    String.format("%s 修改資料成功！", account),
+                                    returnData.toString()
+                            );
+
+                            send(returnMessage);
+
+                        } else {
+                            // 修改資料失敗 ， 也許是 資料沒有變更
+
+                            logger.log(String.format("%s modify profile failure", account));
+                            JsonObject returnData = new JsonObject();
+                            returnData.addProperty("account", account);
+                            Message returnMessage = new Message(
+                                    Message.OP.modifyprofile,
+                                    Message.Status.failure,
+                                    String.format("%s 修改資料失敗！請聯絡遊戲管理員！error code：0x17DFF", account),
+                                    returnData.toString()
+                            );
+
+                            send(returnMessage);
+                        }
+
+                    } else {
+
+                        // account or email not found
+                        logger.log(String.format("%s modify profile failure", account));
+                        JsonObject returnData = new JsonObject();
+                        returnData.addProperty("account", account);
+                        Message returnMessage = new Message(
+                                Message.OP.modifyprofile,
+                                Message.Status.failure,
+                                String.format("%s 修改資料失敗！帳號或信箱異常錯誤！", account),
+                                returnData.toString()
+                        );
+
+                        send(returnMessage);
+                    }
                 }
                 break;
         }
