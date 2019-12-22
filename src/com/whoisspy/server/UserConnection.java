@@ -167,7 +167,7 @@ public class UserConnection extends Thread {
                 }
                 break;
 
-            case signup:
+            case signUp:
 
                 if (message.getStatus().equals(Message.Status.process)) {
 
@@ -186,7 +186,7 @@ public class UserConnection extends Thread {
                         JsonObject returnData = new JsonObject();
                         returnData.addProperty("account", account);
                         Message returnMessage = new Message(
-                                Message.OP.signup,
+                                Message.OP.signUp,
                                 Message.Status.failure,
                                 String.format("%s 註冊失敗！原因：%s！", account, "帳號已經存在"),
                                 returnData.toString()
@@ -212,7 +212,7 @@ public class UserConnection extends Thread {
                         returnData.addProperty("email", docs.getString("email"));
                         returnData.addProperty("photo", docs.getString("photo"));
                         Message returnMessage = new Message(
-                                Message.OP.signup,
+                                Message.OP.signUp,
                                 Message.Status.success,
                                 String.format("%s 註冊成功！歡迎來到誰是臥底！請使用帳號密碼登入遊戲！", account),
                                 returnData.toString()
@@ -228,7 +228,7 @@ public class UserConnection extends Thread {
                 }
                 break;
 
-            case modifypwd:
+            case modifyPassword:
 
                 if (message.getStatus().equals(Message.Status.process)) {
 
@@ -254,7 +254,7 @@ public class UserConnection extends Thread {
                             JsonObject returnData = new JsonObject();
                             returnData.addProperty("account", docs.getString("account"));
                             Message returnMessage = new Message(
-                                    Message.OP.modifypwd,
+                                    Message.OP.modifyPassword,
                                     Message.Status.success,
                                     String.format("%s 修改密碼成功！請使用新密碼進行登入！", account),
                                     returnData.toString()
@@ -272,7 +272,7 @@ public class UserConnection extends Thread {
                             JsonObject returnData = new JsonObject();
                             returnData.addProperty("account", docs.getString("account"));
                             Message returnMessage = new Message(
-                                    Message.OP.modifypwd,
+                                    Message.OP.modifyPassword,
                                     Message.Status.failure,
                                     String.format("%s 修改密碼失敗！請聯絡遊戲管理員！error code：0x1CF66", account),
                                     returnData.toString()
@@ -288,7 +288,7 @@ public class UserConnection extends Thread {
                         JsonObject returnData = new JsonObject();
                         returnData.addProperty("account", account);
                         Message returnMessage = new Message(
-                                Message.OP.modifypwd,
+                                Message.OP.modifyPassword,
                                 Message.Status.failure,
                                 String.format("%s 修改密碼失敗！帳號或信箱輸入錯誤！", account),
                                 returnData.toString()
@@ -339,7 +339,7 @@ public class UserConnection extends Thread {
                 }
                 break;
 
-            case modifyprofile:
+            case modifyProfile:
 
                 if (message.getStatus().equals(Message.Status.process)) {
 
@@ -368,7 +368,7 @@ public class UserConnection extends Thread {
                             returnData.addProperty("email", newEmail);
                             returnData.addProperty("photo", newPhoto);
                             Message returnMessage = new Message(
-                                    Message.OP.modifyprofile,
+                                    Message.OP.modifyProfile,
                                     Message.Status.success,
                                     String.format("%s 修改資料成功！", account),
                                     returnData.toString()
@@ -383,7 +383,7 @@ public class UserConnection extends Thread {
                             JsonObject returnData = new JsonObject();
                             returnData.addProperty("account", account);
                             Message returnMessage = new Message(
-                                    Message.OP.modifyprofile,
+                                    Message.OP.modifyProfile,
                                     Message.Status.failure,
                                     String.format("%s 修改資料失敗！請聯絡遊戲管理員！error code：0x17DFF", account),
                                     returnData.toString()
@@ -399,7 +399,7 @@ public class UserConnection extends Thread {
                         JsonObject returnData = new JsonObject();
                         returnData.addProperty("account", account);
                         Message returnMessage = new Message(
-                                Message.OP.modifyprofile,
+                                Message.OP.modifyProfile,
                                 Message.Status.failure,
                                 String.format("%s 修改資料失敗！帳號或信箱異常錯誤！", account),
                                 returnData.toString()

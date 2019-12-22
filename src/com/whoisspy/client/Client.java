@@ -144,7 +144,7 @@ public class Client {
                     }
                     break;
 
-                case modifypwd:
+                case modifyPassword:
 
                     if (message.getStatus().equals(Message.Status.success))
                     {
@@ -165,7 +165,7 @@ public class Client {
 
                     break;
 
-                case signup:
+                case signUp:
 
                     if (message.getStatus().equals(Message.Status.success))
                     {
@@ -212,7 +212,7 @@ public class Client {
                     }
                     break;
 
-                case modifyprofile:
+                case modifyProfile:
 
                     if (message.getStatus().equals(Message.Status.success))
                     {
@@ -339,7 +339,7 @@ public class Client {
             data.addProperty("password", password);
             data.addProperty("email", email);
             data.addProperty("photo", photoBase64);
-            Message message = new Message(Message.OP.signup, Message.Status.process, "signup", data.toString());
+            Message message = new Message(Message.OP.signUp, Message.Status.process, "signup", data.toString());
 
             socketClient.send(message);
         }
@@ -353,7 +353,7 @@ public class Client {
             data.addProperty("account", account);
             data.addProperty("email", email);
             data.addProperty("newPwd", newPwd);
-            Message message = new Message(Message.OP.modifypwd, Message.Status.process, "modifypwd", data.toString());
+            Message message = new Message(Message.OP.modifyPassword, Message.Status.process, "modifypwd", data.toString());
 
             socketClient.send(message);
         } else {
@@ -377,7 +377,7 @@ public class Client {
             data.addProperty("account", user.getAccount());
             data.addProperty("email", email);
             data.addProperty("photo", photoBase64);
-            Message message = new Message(Message.OP.modifyprofile,
+            Message message = new Message(Message.OP.modifyProfile,
                     Message.Status.process,
                     "modifyprofile",
                     data.toString()

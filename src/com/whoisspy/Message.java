@@ -6,10 +6,15 @@ public class Message {
 
     public enum OP {
         login,
-        signup,
-        modifypwd,
+        signUp,
+        modifyPassword,
         logout,
-        modifyprofile
+        modifyProfile,
+        createRoom,
+        joinRoom,
+        leaveRoom,
+        changeRoomOwner,
+        listRooms
     }
 
     public enum Status {
