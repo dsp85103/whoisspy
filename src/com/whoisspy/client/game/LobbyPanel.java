@@ -71,7 +71,9 @@ public class LobbyPanel extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             String input = JOptionPane.showInputDialog("請輸入房間號碼");
-            lobbyPanelObserver.OnClickedJoinRoomBtn(input);
+            if (input != null) {
+                lobbyPanelObserver.OnClickedJoinRoomBtn(input);
+            }
         }
     };
 
