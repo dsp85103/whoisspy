@@ -9,7 +9,6 @@ import com.whoisspy.Message;
 import com.whoisspy.User;
 import org.bson.Document;
 
-import javax.swing.event.DocumentListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -37,6 +36,7 @@ public class UserConnection extends Thread {
 
     private Map<String, MongoCollection<Document>> collections = new HashMap<>();
     private Map<Integer, Room> rooms = new HashMap<>();
+    private RoomsManager roomsManager;
     private Map<String, UserConnection> lobbyClients = new HashMap<>();
     private List<UserConnection> noLoginUsersList = new ArrayList<>();
     private Map<String, List<UserConnection>> lists = new HashMap<>();
@@ -45,8 +45,10 @@ public class UserConnection extends Thread {
 
     private User user;
 
-    public UserConnection(Socket socket) {
+    private UserConnectionObserver userConnectionObserver;
+    public UserConnection(Socket socket, UserConnectionObserver userConnectionObserver) {
         super();
+        this.userConnectionObserver = userConnectionObserver;
         this.socket = socket;
 
         logger = new Logger(TAG, connectionName);
@@ -74,8 +76,8 @@ public class UserConnection extends Thread {
         this.lobbyClients = map;
     }
 
-    public void setRooms(Map<Integer, Room> map) {
-        rooms = map;
+    public void setRoomsManager(RoomsManager roomsMgr) {
+        roomsManager = roomsMgr;
     }
 
     @Override
@@ -301,7 +303,7 @@ public class UserConnection extends Thread {
 
                 if (message.getStatus().equals(Message.Status.process)) {
 
-                    if (noLoginUsersList.remove(this)) {
+                    if (userConnectionObserver.loginStatus(this)) {
 
                         String account = data.get("account").getAsString();
                         JsonObject returnData = new JsonObject();
@@ -333,7 +335,6 @@ public class UserConnection extends Thread {
                         send(returnMessage);
 
                     }
-
 
                 }
                 break;
@@ -418,10 +419,10 @@ public class UserConnection extends Thread {
         this.user = user;
         if (isLogin) {
             logger.log("change connection status to login");
-            lobbyClients.put(user.getAccount(), this);
+            userConnectionObserver.onLogin(this);
         } else {
             logger.log("change connection status to logout");
-            noLoginUsersList.add(this);
+            userConnectionObserver.onLogout(this);
         }
     }
 

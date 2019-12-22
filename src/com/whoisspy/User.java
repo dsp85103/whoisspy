@@ -18,8 +18,6 @@ public class User {
         this.photo = ImageExtensions.base64StringToImage(photobase64);
     }
 
-
-
     public String getAccount() {
         return account;
     }

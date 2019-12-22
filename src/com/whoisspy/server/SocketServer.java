@@ -12,9 +12,10 @@ import java.util.*;
 
 public class SocketServer extends Thread {
 
-    private Map<Integer, Room> rooms = new HashMap<>();
     private Map<String, UserConnection> lobbyClients = new HashMap<>();
     private List<UserConnection> noLoginConnections = Collections.synchronizedList(new LinkedList<>());
+
+    private RoomsManager roomsManager;
 
     private String tag = "Server";
     private String account = "socket";
@@ -27,6 +28,7 @@ public class SocketServer extends Thread {
     public SocketServer(int port) {
         logger = new Logger(tag, account);
         initMongoDB();
+        initRoomsManager();
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException x) {
@@ -41,6 +43,10 @@ public class SocketServer extends Thread {
         wordsCollection = mongoDBHelper.getCollection("words");
     }
 
+    public void initRoomsManager() {
+        roomsManager = new RoomsManager();
+    }
+
     @Override
     public void run() {
         logger.log(String.format("Start server on %s", serverSocket.getLocalSocketAddress().toString()));
@@ -48,12 +54,9 @@ public class SocketServer extends Thread {
             try {
                 // connection Socket
                 Socket connSocket = serverSocket.accept();
-                UserConnection connection = new UserConnection(connSocket);
+                UserConnection connection = new UserConnection(connSocket, userConnectionObserver);
                 connection.addCollection("users", usersCollection);
                 connection.addCollection("words", wordsCollection);
-                connection.setNoLoginUsersList(noLoginConnections);
-                connection.setLobbyClientsMap(lobbyClients);
-                connection.setRooms(rooms);
                 connection.start();
                 logger.log(String.format("Create a user connection from %s", connSocket.getRemoteSocketAddress().toString()));
                 noLoginConnections.add(connection);
@@ -62,5 +65,63 @@ public class SocketServer extends Thread {
             }
         }
     }
+
+    public UserConnectionObserver userConnectionObserver = new UserConnectionObserver() {
+
+        @Override
+        public boolean onCreateRoom(UserConnection roomOwner,
+                                    String roomName,
+                                    int roomClientAmount,
+                                    String roomDescription,
+                                    boolean roomPrivate) {
+
+
+            return false;
+        }
+
+        @Override
+        public boolean onJoinRoom(UserConnection roomPlayer, int roomId) {
+            return false;
+        }
+
+        @Override
+        public boolean onDeleteRoom(UserConnection roomOwner, int roomId) {
+            return false;
+        }
+
+        @Override
+        public boolean onLeaveRoom(UserConnection roomPlayer) {
+            return false;
+        }
+
+        @Override
+        public boolean onChangeRoomOwner(UserConnection roomOwner, UserConnection roomNewOwner) {
+            return false;
+        }
+
+        @Override
+        public void onLogin(UserConnection userConn) {
+            if (noLoginConnections.contains(userConn)) {
+                noLoginConnections.remove(userConn);
+                lobbyClients.put(userConn.getUser().getAccount(), userConn);
+            }
+        }
+
+        @Override
+        public void onLogout(UserConnection userConn) {
+            if (lobbyClients.containsKey(userConn.getUser().getAccount())) {
+                lobbyClients.remove(userConn.getUser().getAccount());
+                noLoginConnections.add(userConn);
+            }
+        }
+
+        @Override
+        public boolean loginStatus(UserConnection userConn) {
+            // if login return true
+            // else     return false
+            return !noLoginConnections.contains(userConn);
+        }
+    };
+
 
 }
