@@ -17,7 +17,8 @@ public class RoomsManager {
                            String roomName,
                            int roomClientAmount,
                            String roomDescription,
-                           boolean roomPrivate) {
+                           boolean roomPrivate,
+                           String roomPassword) {
 
         int roomId;
 
@@ -27,7 +28,7 @@ public class RoomsManager {
 
         } while (roomIds.contains(roomId));
 
-        Room createdRoom = new Room(owner, roomId, roomName, roomClientAmount, roomDescription, roomPrivate);
+        Room createdRoom = new Room(owner, roomId, roomName, roomClientAmount, roomDescription, roomPrivate, roomPassword);
         rooms.put(roomId, createdRoom);
         return createdRoom;
     }
@@ -54,6 +55,18 @@ public class RoomsManager {
         }
     }
 
+    public boolean forceLeaveRoom(String account) {
+        for (Room room : rooms.values()) {
+            if (room.getClients().containsKey(account)) {
+                room.removePlayer(room.getClients().get(account));
+                if (room.getRoomClientCount() == 0) {
+                    return deleteRoom(room.getRoomId());
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 
     public boolean deleteRoom(Integer roomId) {
         if (rooms.containsKey(roomId)) {

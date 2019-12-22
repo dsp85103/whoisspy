@@ -16,16 +16,29 @@ public class Room {
     private int roomClientAmount;
     private String roomDescription;
     private boolean roomPrivate;
+    private String roomPassword = "";
 
-    public Room(UserConnection roomOwner, Integer id, String roomName, int roomClientAmount, String roomDescription, boolean roomPrivate) {
+    public Room(UserConnection roomOwner,
+                Integer id,
+                String roomName,
+                int roomClientAmount,
+                String roomDescription,
+                boolean roomPrivate,
+                String roomPassword) {
+
         this.roomOwner = roomOwner;
         this.roomId = id;
         this.roomName = roomName;
         this.roomClientAmount = roomClientAmount;
         this.roomDescription = roomDescription;
         this.roomPrivate = roomPrivate;
+        this.roomPassword = roomPassword;
 
         clients.put(roomOwner.getUser().getAccount(), roomOwner);
+    }
+
+    public Map<String, UserConnection> getClients() {
+        return clients;
     }
 
     public boolean addPlayer(UserConnection userConnection) {
@@ -55,8 +68,8 @@ public class Room {
         return roomOwner == userConn;
     }
 
-    public int getRoomClientAmount() {
-        return roomClientAmount;
+    public int getRoomId() {
+        return roomId;
     }
 
     public int getRoomClientCount() {

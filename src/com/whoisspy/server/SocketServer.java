@@ -81,7 +81,7 @@ public class SocketServer extends Thread {
 
         @Override
         public boolean onJoinRoom(UserConnection roomPlayer, int roomId) {
-            return false;
+            return roomsManager.joinRoom(roomPlayer, roomId);
         }
 
         @Override
@@ -112,6 +112,8 @@ public class SocketServer extends Thread {
             if (lobbyClients.containsKey(userConn.getUser().getAccount())) {
                 lobbyClients.remove(userConn.getUser().getAccount());
                 noLoginConnections.add(userConn);
+            } else if (!noLoginConnections.contains(userConn)) {
+                roomsManager.forceLeaveRoom(userConn.getUser().getAccount());
             }
         }
 

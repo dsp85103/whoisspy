@@ -3,10 +3,7 @@ package com.whoisspy.client;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.whoisspy.*;
-import com.whoisspy.client.game.LobbyPanel;
-import com.whoisspy.client.game.LobbyPanelObserver;
-import com.whoisspy.client.game.ProfilePanel;
-import com.whoisspy.client.game.ProfilePanelObserver;
+import com.whoisspy.client.game.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -238,6 +235,20 @@ public class Client {
 
                     }
                     break;
+
+                case joinRoom:
+
+                    if (message.getStatus().equals(Message.Status.success)) {
+
+                        logger.log(String.format("join room %s successful", data.get("roomId").getAsString()));
+                        ShowMessageBox(message.getMsg(), JOptionPane.INFORMATION_MESSAGE);
+
+                    } else if (message.getStatus().equals(Message.Status.failure)) {
+
+                        logger.log(String.format("join room %s failure", data.get("roomId").getAsString()));
+                        ShowMessageBox(message.getMsg(), JOptionPane.ERROR_MESSAGE);
+
+                    }
             }
         }
     };
@@ -387,11 +398,11 @@ public class Client {
         }
     };
 
-
     public LobbyPanelObserver lobbyPanelObserver = new LobbyPanelObserver() {
         @Override
         public void OnClickedCreateRoomBtn() {
-
+            CreateRoomPanel createRoomPanel = new CreateRoomPanel(createRoomObserver);
+            initFrame.setContentBodyPanel("創建房間", createRoomPanel);
         }
 
         @Override
@@ -403,8 +414,16 @@ public class Client {
         public void OnClickedJoinRoomBtn(String roomNumberStr) {
             int roomNumber = tryIntParse(roomNumberStr, 0);
             if (roomNumber > 0) {
-                // input is a integer format
-                logger.log(String.format("Join %d room",roomNumber));
+                // input is a integer format then send join room message
+                JsonObject data = new JsonObject();
+                data.addProperty("roomId", roomNumber);
+                Message message = new Message(Message.OP.joinRoom,
+                        Message.Status.process,
+                        "joinRoom",
+                        data.toString());
+
+                socketClient.send(message);
+
             } else {
                 ShowMessageBox("請輸入正確的房間號碼！", JOptionPane.WARNING_MESSAGE);
             }
@@ -425,6 +444,15 @@ public class Client {
         }
     };
 
+    public CreateRoomObserver createRoomObserver = new CreateRoomObserver() {
+
+        @Override
+        public void OnClickedCreateBtn(String roomName, String roomAmount, String roomDescription, boolean roomPrivate, String roomPassword) {
+            System.out.println("create "+ roomName);
+        }
+
+
+    };
     public ActionListener goHomeBtnActionListener = e -> setupHomePanel();
 
     public ActionListener logoutBtnActionListener = e -> {

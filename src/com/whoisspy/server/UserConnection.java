@@ -35,11 +35,6 @@ public class UserConnection extends Thread {
     private ObjectOutputStream output;
 
     private Map<String, MongoCollection<Document>> collections = new HashMap<>();
-    private Map<Integer, Room> rooms = new HashMap<>();
-    private RoomsManager roomsManager;
-    private Map<String, UserConnection> lobbyClients = new HashMap<>();
-    private List<UserConnection> noLoginUsersList = new ArrayList<>();
-    private Map<String, List<UserConnection>> lists = new HashMap<>();
 
     private Logger logger;
 
@@ -66,18 +61,6 @@ public class UserConnection extends Thread {
 
     public void addCollection(String collectionName, MongoCollection<Document> collection) {
         collections.put(collectionName, collection);
-    }
-
-    public void setNoLoginUsersList(List<UserConnection> list) {
-        noLoginUsersList = list;
-    }
-
-    public void setLobbyClientsMap(Map<String, UserConnection> map) {
-        this.lobbyClients = map;
-    }
-
-    public void setRoomsManager(RoomsManager roomsMgr) {
-        roomsManager = roomsMgr;
     }
 
     @Override
@@ -407,6 +390,30 @@ public class UserConnection extends Thread {
 
                         send(returnMessage);
                     }
+                }
+                break;
+
+            case joinRoom:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+
+                    boolean result = userConnectionObserver.onJoinRoom(this, data.get("roomId").getAsInt());
+
+                    if (result) {
+
+                        //change status then send back
+                        message.setStatus(Message.Status.success);
+                        message.setMsg(String.format("成功加入第 %s 號房間", data.get("roomId").getAsString()));
+                        send(message);
+
+                    } else {
+
+                        message.setStatus(Message.Status.failure);
+                        message.setMsg(String.format("加入第 %s 號房間失敗！原因：房間不存在！", data.get("roomId").getAsString()));
+                        send(message);
+
+                    }
+
                 }
                 break;
         }
