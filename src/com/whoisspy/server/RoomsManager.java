@@ -1,5 +1,14 @@
 package com.whoisspy.server;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import com.whoisspy.Room;
+import com.whoisspy.RoomInformation;
+import com.whoisspy.User;
+
 import java.util.*;
 
 // 房間需要的操作行為 統一由 room manager 處理
@@ -13,6 +22,8 @@ public class RoomsManager {
 
     }
 
+    private Gson gson = new Gson();
+
     public Room createRoom(UserConnection owner,
                            String roomName,
                            int roomClientAmount,
@@ -24,7 +35,7 @@ public class RoomsManager {
 
         do {
 
-            roomId = (int) (Math.random() * 1000) +1;
+            roomId = (int) (Math.random() * 1000) + 1;
 
         } while (roomIds.contains(roomId));
 
@@ -53,6 +64,23 @@ public class RoomsManager {
         } else {
             return false;
         }
+    }
+
+    public String listRooms() {
+
+        JsonObject roomsData = new JsonObject();
+        List<RoomInformation> roomInformationList = new ArrayList<>();
+        if (rooms.size() != 0) {
+            for (Room room : rooms.values()) {
+                roomInformationList.add(room.getRoomInformation());
+            }
+        } else {
+            return "";
+        }
+
+        roomsData.addProperty("rooms", gson.toJson(roomInformationList, new TypeToken<List<RoomInformation>>() {}.getType()));
+        return gson.toJson(roomsData);
+
     }
 
     public boolean forceLeaveRoom(String account) {

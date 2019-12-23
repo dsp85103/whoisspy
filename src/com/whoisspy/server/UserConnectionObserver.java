@@ -1,13 +1,14 @@
 package com.whoisspy.server;
 
-import com.whoisspy.User;
+import com.whoisspy.Room;
 
 public interface UserConnectionObserver {
-    boolean onCreateRoom(UserConnection roomOwner,
-                         String roomName,
-                         int roomClientAmount,
-                         String roomDescription,
-                         boolean roomPrivate);
+    Room onCreateRoom(UserConnection roomOwner,
+                      String roomName,
+                      int roomClientAmount,
+                      String roomDescription,
+                      boolean roomPrivate,
+                      String roomPassword);
 
     boolean onJoinRoom(UserConnection roomPlayer,
                        int roomId);
@@ -16,6 +17,8 @@ public interface UserConnectionObserver {
                          int roomId);
 
     boolean onLeaveRoom(UserConnection roomPlayer);
+
+    String onListRooms();
 
     boolean onChangeRoomOwner(UserConnection roomOwner, UserConnection roomNewOwner);
 

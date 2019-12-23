@@ -12,9 +12,8 @@ public class Message {
         modifyProfile,
         createRoom,
         joinRoom,
+        listRooms,
         leaveRoom,
-        changeRoomOwner,
-        listRooms
     }
 
     public enum Status {

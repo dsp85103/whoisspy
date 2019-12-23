@@ -86,7 +86,7 @@ public class Client {
         connectionName = connName;
         logger.setAccount(connName);
         this.isLogin = isLogin;
-        this.user= user;
+        this.user = user;
         if (isLogin) {
             logger.log("change connection status to login");
         } else {
@@ -117,8 +117,7 @@ public class Client {
 
                 case login:
 
-                    if (message.getStatus().equals(Message.Status.success))
-                    {
+                    if (message.getStatus().equals(Message.Status.success)) {
 
                         logger.log(String.format("%s login successful", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
@@ -131,9 +130,7 @@ public class Client {
                         //登入成功 修改狀態
                         changeLoginStatus(true, user.getAccount(), user);
 
-                    }
-                    else if (message.getStatus().equals(Message.Status.failure))
-                    {
+                    } else if (message.getStatus().equals(Message.Status.failure)) {
 
                         logger.log(String.format("%s login failure", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.ERROR_MESSAGE);
@@ -143,8 +140,7 @@ public class Client {
 
                 case modifyPassword:
 
-                    if (message.getStatus().equals(Message.Status.success))
-                    {
+                    if (message.getStatus().equals(Message.Status.success)) {
 
                         logger.log(String.format("%s modify password successful", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
@@ -152,9 +148,7 @@ public class Client {
                         //修改成功 進行登出
                         changeLoginStatus(false, "unknown", null);
 
-                    }
-                    else if (message.getStatus().equals(Message.Status.failure))
-                    {
+                    } else if (message.getStatus().equals(Message.Status.failure)) {
 
                         logger.log("modify password failure");
                         ShowMessageBox(message.msg, JOptionPane.ERROR_MESSAGE);
@@ -164,8 +158,7 @@ public class Client {
 
                 case signUp:
 
-                    if (message.getStatus().equals(Message.Status.success))
-                    {
+                    if (message.getStatus().equals(Message.Status.success)) {
 
                         logger.log(String.format("%s sign up successful", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
@@ -177,9 +170,7 @@ public class Client {
                         );
                         changeLoginStatus(true, user.getAccount(), user);
 
-                    }
-                    else if (message.getStatus().equals(Message.Status.failure))
-                    {
+                    } else if (message.getStatus().equals(Message.Status.failure)) {
 
                         logger.log(String.format("%s sign up failure", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.WARNING_MESSAGE);
@@ -190,8 +181,7 @@ public class Client {
 
                 case logout:
 
-                    if (message.getStatus().equals(Message.Status.success))
-                    {
+                    if (message.getStatus().equals(Message.Status.success)) {
 
                         logger.log(String.format("%s logout successful", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
@@ -199,9 +189,7 @@ public class Client {
                         //登出成功 修改為登出狀態
                         changeLoginStatus(false, "unknown", null);
 
-                    }
-                    else if (message.getStatus().equals(Message.Status.failure))
-                    {
+                    } else if (message.getStatus().equals(Message.Status.failure)) {
 
                         logger.log(String.format("%s logout failure", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.WARNING_MESSAGE);
@@ -211,8 +199,7 @@ public class Client {
 
                 case modifyProfile:
 
-                    if (message.getStatus().equals(Message.Status.success))
-                    {
+                    if (message.getStatus().equals(Message.Status.success)) {
 
                         logger.log(String.format("%s modify profile successful", data.get("account").getAsString()));
                         ShowMessageBox(message.msg, JOptionPane.INFORMATION_MESSAGE);
@@ -223,9 +210,7 @@ public class Client {
                         user.setPhoto(ImageExtensions.base64StringToImage(data.get("photo").getAsString()));
                         changeLoginStatus(true, user.getAccount(), user);
 
-                    }
-                    else if (message.getStatus().equals(Message.Status.failure))
-                    {
+                    } else if (message.getStatus().equals(Message.Status.failure)) {
 
                         logger.log("modify profile failure");
                         ShowMessageBox(message.msg, JOptionPane.ERROR_MESSAGE);
@@ -243,11 +228,54 @@ public class Client {
                         logger.log(String.format("join room %s successful", data.get("roomId").getAsString()));
                         ShowMessageBox(message.getMsg(), JOptionPane.INFORMATION_MESSAGE);
 
+                        //
+
                     } else if (message.getStatus().equals(Message.Status.failure)) {
 
                         logger.log(String.format("join room %s failure", data.get("roomId").getAsString()));
                         ShowMessageBox(message.getMsg(), JOptionPane.ERROR_MESSAGE);
 
+                    }
+                    break;
+
+
+                case createRoom:
+
+                    if (message.getStatus().equals(Message.Status.success)) {
+
+                        logger.log(String.format("create room successful, room id is %s", data.get("roomId").getAsString()));
+                        ShowMessageBox(message.getMsg(), JOptionPane.INFORMATION_MESSAGE);
+                        System.out.println(data.toString());
+                        //建立房間成功
+                        // TODO 顯示房間畫面
+
+                    } else if (message.getStatus().equals(Message.Status.failure)) {
+
+                        logger.log("create room failure");
+                        ShowMessageBox(message.getMsg(), JOptionPane.ERROR_MESSAGE);
+
+                    }
+
+                    break;
+
+                case listRooms:
+
+                    if (message.getStatus().equals(Message.Status.success)) {
+
+                        logger.log("list rooms successful");
+                        ShowMessageBox(message.getMsg(), JOptionPane.INFORMATION_MESSAGE);
+
+                        if (data != null) {
+
+                            ListRoomPanel listRoomPanel = new ListRoomPanel(listRoomPanelObserver, data);
+                            initFrame.setContentBodyPanel("所有房間", listRoomPanel);
+
+                        } else {
+
+                            logger.log("no room online");
+                            ShowMessageBox("線上沒有任何房間", JOptionPane.WARNING_MESSAGE);
+
+                        }
                     }
             }
         }
@@ -392,7 +420,7 @@ public class Client {
                     Message.Status.process,
                     "modifyprofile",
                     data.toString()
-                    );
+            );
 
             socketClient.send(message);
         }
@@ -407,7 +435,8 @@ public class Client {
 
         @Override
         public void OnClickedListRoomBtn() {
-
+            Message message = new Message(Message.OP.listRooms, Message.Status.process, "listRooms", "");
+            socketClient.send(message);
         }
 
         @Override
@@ -429,13 +458,6 @@ public class Client {
             }
         }
 
-        public int tryIntParse(String value, int defaultValue) {
-            try {
-                return Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                return defaultValue;
-            }
-        }
 
         @Override
         public void OnClickedProfileBtn() {
@@ -444,15 +466,78 @@ public class Client {
         }
     };
 
+    public int tryIntParse(String value, int defaultValue) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
     public CreateRoomObserver createRoomObserver = new CreateRoomObserver() {
 
         @Override
         public void OnClickedCreateBtn(String roomName, String roomAmount, String roomDescription, boolean roomPrivate, String roomPassword) {
-            System.out.println("create "+ roomName);
+            if (!roomName.equals("")) {
+
+                int amount = tryIntParse(roomAmount, 0);
+                if (amount > 0 && amount <= 10) {   // 1~10 人數
+
+                    if (roomPrivate && !roomPassword.equals("")) {
+                        // 需要設定密碼 私人房間
+                        JsonObject data = new JsonObject();
+                        data.addProperty("roomName", roomName);
+                        data.addProperty("roomAmount", roomAmount);
+                        data.addProperty("roomDescription", roomDescription);
+                        data.addProperty("roomPrivate", true);
+                        data.addProperty("roomPassword", roomPassword);
+
+                        Message message = new Message(
+                                Message.OP.createRoom,
+                                Message.Status.process,
+                                "createRoom",
+                                data.toString());
+
+                        socketClient.send(message);
+
+                    } else {
+
+                        // 不需要密碼 公開房間
+                        JsonObject data = new JsonObject();
+                        data.addProperty("roomName", roomName);
+                        data.addProperty("roomAmount", roomAmount);
+                        data.addProperty("roomDescription", roomDescription);
+                        data.addProperty("roomPrivate", false);
+
+                        Message message = new Message(
+                                Message.OP.createRoom,
+                                Message.Status.process,
+                                "createRoom",
+                                data.toString());
+
+                        socketClient.send(message);
+
+                    }
+
+                } else {  // 數量為零，輸入格式錯誤
+                    ShowMessageBox("房間人數格式錯誤，請輸入大於零小於十的數字格式", JOptionPane.WARNING_MESSAGE);
+                }
+
+
+            } else {
+
+                ShowMessageBox("房間名稱為空，請輸入房間名稱", JOptionPane.WARNING_MESSAGE);
+
+            }
         }
 
 
     };
+
+    public ListRoomPanelObserver listRoomPanelObserver = new ListRoomPanelObserver() {
+
+    };
+
     public ActionListener goHomeBtnActionListener = e -> setupHomePanel();
 
     public ActionListener logoutBtnActionListener = e -> {

@@ -1,8 +1,8 @@
 package com.whoisspy.server;
 
-import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.whoisspy.Logger;
+import com.whoisspy.Room;
 import org.bson.Document;
 
 import java.io.IOException;
@@ -69,14 +69,16 @@ public class SocketServer extends Thread {
     public UserConnectionObserver userConnectionObserver = new UserConnectionObserver() {
 
         @Override
-        public boolean onCreateRoom(UserConnection roomOwner,
-                                    String roomName,
-                                    int roomClientAmount,
-                                    String roomDescription,
-                                    boolean roomPrivate) {
+        public Room onCreateRoom(UserConnection roomOwner,
+                                 String roomName,
+                                 int roomClientAmount,
+                                 String roomDescription,
+                                 boolean roomPrivate,
+                                 String roomPassword) {
 
-
-            return false;
+            Room room  = roomsManager.createRoom(roomOwner, roomName, roomClientAmount, roomDescription, roomPrivate, roomPassword);
+            onJoinRoom(roomOwner, room.getRoomId());
+            return room;
         }
 
         @Override
@@ -92,6 +94,11 @@ public class SocketServer extends Thread {
         @Override
         public boolean onLeaveRoom(UserConnection roomPlayer) {
             return false;
+        }
+
+        @Override
+        public String onListRooms() {
+            return roomsManager.listRooms();
         }
 
         @Override

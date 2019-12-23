@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.UpdateResult;
 import com.whoisspy.Logger;
 import com.whoisspy.Message;
+import com.whoisspy.Room;
 import com.whoisspy.User;
 import org.bson.Document;
 
@@ -15,9 +16,7 @@ import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.mongodb.client.model.Filters.*;
@@ -41,6 +40,9 @@ public class UserConnection extends Thread {
     private User user;
 
     private UserConnectionObserver userConnectionObserver;
+
+    private Room currentRoom;
+
     public UserConnection(Socket socket, UserConnectionObserver userConnectionObserver) {
         super();
         this.userConnectionObserver = userConnectionObserver;
@@ -414,6 +416,60 @@ public class UserConnection extends Thread {
 
                     }
 
+                }
+                break;
+
+            case createRoom:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+
+                    String roomName = data.get("roomName").getAsString();
+                    int roomAmount = data.get("roomAmount").getAsInt();
+                    String roomDescription = data.get("roomDescription").getAsString();
+                    boolean roomPrivate = data.get("roomPrivate").getAsBoolean();
+                    String roomPassword = "";
+                    if (roomPrivate) {
+                        roomPassword = data.get("roomPassword").getAsString();
+                    }
+
+                    Room createdRoom = userConnectionObserver.onCreateRoom(
+                            this,
+                            roomName,
+                            roomAmount,
+                            roomDescription,
+                            roomPrivate,
+                            roomPassword);
+
+                    if (createdRoom != null) {
+
+                        currentRoom = createdRoom;
+                        data.addProperty("roomId", createdRoom.getRoomId());
+                        message.setStatus(Message.Status.success);
+                        message.setMsg("房間建立成功！準備進入房間！");
+                        message.setData(data.toString());
+
+                        send(message);
+
+                    } else {
+
+                        message.setStatus(Message.Status.failure);
+                        message.setMsg("房間建立失敗！請稍後再試！");
+
+                        send(message);
+
+                    }
+                }
+                break;
+
+            case listRooms:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+
+                    message.setStatus(Message.Status.success);
+                    message.setMsg("成功取得所有房間");
+                    message.setData(userConnectionObserver.onListRooms());
+
+                    send(message);
                 }
                 break;
         }
