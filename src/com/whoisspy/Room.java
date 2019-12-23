@@ -1,40 +1,28 @@
-package com.whoisspy.server;
+package com.whoisspy;
 
-import com.whoisspy.User;
+import com.whoisspy.server.UserConnection;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Room {
 
     private Map<String, UserConnection> clients = new HashMap<>();
     private UserConnection roomOwner;
-    private int roomId;
-    private String roomName;
-    private int roomClientAmount;
-    private String roomDescription;
-    private boolean roomPrivate;
-    private String roomPassword = "";
+    private RoomInformation roomInformation;
 
     public Room(UserConnection roomOwner,
                 Integer id,
                 String roomName,
-                int roomClientAmount,
+                int roomAmount,
                 String roomDescription,
                 boolean roomPrivate,
                 String roomPassword) {
 
         this.roomOwner = roomOwner;
-        this.roomId = id;
-        this.roomName = roomName;
-        this.roomClientAmount = roomClientAmount;
-        this.roomDescription = roomDescription;
-        this.roomPrivate = roomPrivate;
-        this.roomPassword = roomPassword;
+        roomInformation = new RoomInformation(id, roomName, roomAmount, 0, roomDescription, roomPrivate, roomPassword);
 
-        clients.put(roomOwner.getUser().getAccount(), roomOwner);
+        //clients.put(roomOwner.getUser().getAccount(), roomOwner);
     }
 
     public Map<String, UserConnection> getClients() {
@@ -44,6 +32,7 @@ public class Room {
     public boolean addPlayer(UserConnection userConnection) {
         if (!clients.containsKey(userConnection.getUser().getAccount())) {
             clients.put(userConnection.getUser().getAccount(), userConnection);
+            roomInformation.setRoomCount(roomInformation.getRoomCount()+1);
             return true;
         } else {
             return false;
@@ -53,6 +42,7 @@ public class Room {
     public boolean removePlayer(UserConnection userConnection) {
         if (clients.containsKey(userConnection.getUser().getAccount())) {
             clients.remove(userConnection.getUser().getAccount());
+            roomInformation.setRoomCount(roomInformation.getRoomCount()+1);
             return true;
         } else {
             return false;
@@ -64,12 +54,36 @@ public class Room {
         return true;
     }
 
+    public RoomInformation getRoomInformation() {
+        return roomInformation;
+    }
+
     public boolean isOwner(UserConnection userConn) {
         return roomOwner == userConn;
     }
 
+    public boolean isRoomPrivate() {
+        return roomInformation.isRoomPrivate();
+    }
+
+    public String getRoomName() {
+        return roomInformation.getRoomName();
+    }
+
+    public int getRoomAmount() {
+        return roomInformation.getRoomAmount();
+    }
+
+    public String getRoomDescription() {
+        return roomInformation.getRoomDescription();
+    }
+
+    public String getRoomPassword() {
+        return roomInformation.getRoomPassword();
+    }
+
     public int getRoomId() {
-        return roomId;
+        return roomInformation.getRoomId();
     }
 
     public int getRoomClientCount() {
@@ -81,7 +95,10 @@ public class Room {
     }
 
     public void NotifyAllPlayerMessage() {
+        for (UserConnection player : clients.values()) {
 
+            //player.send();
+        }
     }
 
 }
