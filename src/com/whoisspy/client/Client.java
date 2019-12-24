@@ -536,6 +536,15 @@ public class Client {
 
     public ListRoomPanelObserver listRoomPanelObserver = new ListRoomPanelObserver() {
 
+        @Override
+        public void onClickedJoinRoomBtn(String roomId) {
+            JsonObject data = new JsonObject();
+            data.addProperty("roomId", roomId);
+            Message message = new Message(Message.OP.joinRoom, Message.Status.process, "joinRoom", data.toString());
+            logger.log(String.format("join room %s",roomId));
+
+            socketClient.send(message);
+        }
     };
 
     public ActionListener goHomeBtnActionListener = e -> setupHomePanel();

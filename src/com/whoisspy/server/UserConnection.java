@@ -476,10 +476,6 @@ public class UserConnection extends Thread {
     }
 
     public void changeLoginStatus(boolean isLogin, String connName, User user) {
-        connectionName = connName;
-        logger.setAccount(connectionName);
-        this.isLogin = isLogin;
-        this.user = user;
         if (isLogin) {
             logger.log("change connection status to login");
             userConnectionObserver.onLogin(this);
@@ -487,6 +483,11 @@ public class UserConnection extends Thread {
             logger.log("change connection status to logout");
             userConnectionObserver.onLogout(this);
         }
+
+        connectionName = connName;
+        logger.setAccount(connectionName);
+        this.isLogin = isLogin;
+        this.user = user;
     }
 
     public String getMD5(String str) {

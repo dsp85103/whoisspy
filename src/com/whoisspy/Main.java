@@ -36,11 +36,11 @@ public class Main {
         Client client = new Client("誰是臥底", "0.0.1");
         client.Start();
 
-//        Client client2 = new Client("誰是臥底2", "0.0.1");
-//        client2.Start();
-//
-//        Client client3 = new Client("誰是臥底3", "0.0.1");
-//        client3.Start();
+        Client client2 = new Client("誰是臥底2", "0.0.1");
+        client2.Start();
+
+        Client client3 = new Client("誰是臥底3", "0.0.1");
+        client3.Start();
 
     }
 }
