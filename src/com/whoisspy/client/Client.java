@@ -545,6 +545,12 @@ public class Client {
 
             socketClient.send(message);
         }
+
+        @Override
+        public void onRefreshRooms() {
+            //直接更新整個Panel
+            lobbyPanelObserver.OnClickedListRoomBtn();
+        }
     };
 
     public ActionListener goHomeBtnActionListener = e -> setupHomePanel();

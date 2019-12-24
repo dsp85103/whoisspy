@@ -5,8 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import com.whoisspy.RoomInformation;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,6 +15,8 @@ import java.util.ArrayList;
 public class ListRoomPanel extends JPanel {
 
     private JButton joinRoomBtn;
+    private JButton refreshRoomBtn;
+    private JPanel featuresPanel;
     private JTable roomsTable;
     private RoomsTableModel roomsTableModel;
 
@@ -46,14 +46,24 @@ public class ListRoomPanel extends JPanel {
         roomsTable.setFont(tableFont);
         roomsTable.addMouseListener(roomsTableMouseListener);
 
+        featuresPanel = new JPanel();
+        featuresPanel.setLayout(new GridLayout(2,1));
 
         joinRoomBtn = new JButton("加入房間");
         joinRoomBtn.setFont(btnFont);
         joinRoomBtn.setEnabled(false);
         joinRoomBtn.addActionListener(joinRoomBtnActionListener);
 
+        refreshRoomBtn = new JButton("更新列表");
+        refreshRoomBtn.setFont(btnFont);
+        refreshRoomBtn.setEnabled(true);
+        refreshRoomBtn.addActionListener(refreshRoomBtnActionListener);
+
+        featuresPanel.add(refreshRoomBtn);
+        featuresPanel.add(joinRoomBtn);
+
         add(new JScrollPane(roomsTable), BorderLayout.CENTER);
-        add(joinRoomBtn, BorderLayout.SOUTH);
+        add(featuresPanel, BorderLayout.SOUTH);
     }
 
 
@@ -88,6 +98,13 @@ public class ListRoomPanel extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             listRoomPanelObserver.onClickedJoinRoomBtn(roomsTableModel.getSelectedRoomId(roomsTable.getSelectedRow()).toString());
+        }
+    };
+
+    public ActionListener refreshRoomBtnActionListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            listRoomPanelObserver.onRefreshRooms();
         }
     };
 
