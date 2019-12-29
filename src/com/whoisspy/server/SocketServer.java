@@ -3,6 +3,7 @@ package com.whoisspy.server;
 import com.mongodb.client.MongoCollection;
 import com.whoisspy.Logger;
 import com.whoisspy.Room;
+import com.whoisspy.RoomInformation;
 import org.bson.Document;
 
 import java.io.IOException;
@@ -92,13 +93,28 @@ public class SocketServer extends Thread {
         }
 
         @Override
-        public boolean onLeaveRoom(UserConnection roomPlayer) {
-            return false;
+        public RoomInformation getRoomInformation(int roomId) {
+            return roomsManager.getRoomInformation(roomId);
         }
 
         @Override
-        public String onListRooms() {
-            return roomsManager.listRooms();
+        public boolean onLeaveRoom(UserConnection roomPlayer, int roomId) {
+            return roomsManager.leaveRoom(roomPlayer, roomId);
+        }
+
+        @Override
+        public Room getRoom(int roomId) {
+            return roomsManager.getRoom(roomId);
+        }
+
+        @Override
+        public List<RoomInformation> getRoomsList() {
+            return roomsManager.getRoomsList();
+        }
+
+        @Override
+        public String getRoomPlayersData(int roomId) {
+            return roomsManager.getRoomPlayersData(roomId);
         }
 
         @Override

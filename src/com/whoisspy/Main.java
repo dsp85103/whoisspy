@@ -3,6 +3,7 @@ import com.whoisspy.client.Client;
 import com.whoisspy.server.Server;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  *
@@ -30,6 +31,8 @@ public class Main {
             e.printStackTrace();
         }
 
+
+
         Server server = new Server(15566);
         server.start();
 
@@ -38,9 +41,9 @@ public class Main {
 
         Client client2 = new Client("誰是臥底2", "0.0.1");
         client2.Start();
-
-        Client client3 = new Client("誰是臥底3", "0.0.1");
-        client3.Start();
+//
+//        Client client3 = new Client("誰是臥底3", "0.0.1");
+//        client3.Start();
 
     }
 }

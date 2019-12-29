@@ -1,4 +1,4 @@
-package com.whoisspy.client.game;
+package com.whoisspy.client.lobby;
 
 import javax.swing.*;
 import java.awt.*;

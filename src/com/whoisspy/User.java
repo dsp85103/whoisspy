@@ -10,12 +10,14 @@ public class User {
 
     private String account;
     private String email;
+    private String photoBase64;
     private Image photo;
 
-    public User(String account, String email, String photobase64) {
+    public User(String account, String email, String photoBase64) {
         this.account = account;
         this.email = email;
-        this.photo = ImageExtensions.base64StringToImage(photobase64);
+        this.photoBase64 = photoBase64;
+//        this.photo = ImageExtensions.base64StringToImage(photoBase64);
     }
 
     public String getAccount() {
@@ -34,11 +36,11 @@ public class User {
         this.email = email;
     }
 
-    public Image getPhoto() {
-        return photo;
+    public String getPhotoBase64() {
+        return photoBase64;
     }
 
-    public void setPhoto(Image photo) {
-        this.photo = photo;
+    public void setPhotoBase64(String photoBase64) {
+        this.photoBase64 = photoBase64;
     }
 }

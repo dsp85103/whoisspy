@@ -1,37 +1,22 @@
 package com.whoisspy;
 
-import com.google.gson.Gson;
-
-public class Message {
+public class RoomMessage {
 
     public enum OP {
-        login,
-        signUp,
-        modifyPassword,
-        logout,
-        modifyProfile,
-        createRoom,
-        joinRoom,
-        listRooms,      //列出所有房間
-        leaveRoom,      //玩家離開房間
-        playerJoin,     //其他玩家加入房間，更新房間狀態
-        playerLeave,    //其他玩家離開房間，更新房間狀態
+        playerJoin,     //玩家加入房間，更新房間狀態
+        playerLeave,    //玩家離開房間，更新房間狀態
         playerWait,     //等待人數到齊
-        playerChat,     //玩家聊天訊息
         gameStart,      //人數到齊，通知所有玩家遊戲開始
-        gameRefresh,    //玩家遊戲狀態更新
         gameRoundStart, //通知所有玩家回合開始
         gameWord,       //分配所有玩家的單字，並告訴玩家臥底或平民身分，玩家端顯示大概5秒後顯示輸入框讓玩家描述單字，並等待大家回傳文字描述，估計 30 秒
         gameRoundWait,  //通知大家等待回傳文字描述，收集到所有玩家的描述
         gameWordDes,    //玩家回傳單字描述
         gamePlayersDes, //其他玩家的單字描述，估計顯示 10 秒，並直接顯示輸入框讓大家猜測誰是臥底
         gameVote,      //所有玩家猜測誰是臥底
-        gamePlayerGuess, // 玩家猜測誰是臥底
         gamePlayerVotes, //告知所有玩家的猜測票數
         gameGuessError, //猜錯臥底，告知所有遊戲玩家，該平民狀態設定為死亡
         gameGuessSuccess, //猜對臥底，告知所有遊戲玩家，該臥底設定狀態為死亡，回合結束
         gameRoundOver,  //告知玩家們遊戲結束，並告知平名單字跟臥底單字，等待約 10 秒，進入下一回合
-        gameOver,
         gameWait,       //回合間等待，估計 5 秒開始下一回合
         gameAnswer,     //如果臥底票數較多，通知所有玩家誰是臥底
     }
@@ -47,7 +32,7 @@ public class Message {
     public String msg;
     public String data;
 
-    public Message(OP op, Status status, String msg, String data) {
+    public RoomMessage(OP op, Status status, String msg, String data) {
         this.op = op;
         this.status = status;
         this.msg = msg;
@@ -84,9 +69,5 @@ public class Message {
 
     public void setData(String data) {
         this.data = data;
-    }
-
-    public static String makeMessageString(Message message) {
-        return new Gson().toJson(message);
     }
 }

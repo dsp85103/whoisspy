@@ -2,12 +2,11 @@ package com.whoisspy.server;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.result.UpdateResult;
-import com.whoisspy.Logger;
-import com.whoisspy.Message;
-import com.whoisspy.Room;
-import com.whoisspy.User;
+import com.whoisspy.*;
 import org.bson.Document;
 
 import java.io.IOException;
@@ -16,8 +15,7 @@ import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.security.MessageDigest;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.mongodb.client.model.Filters.*;
 
@@ -61,8 +59,29 @@ public class UserConnection extends Thread {
         return user;
     }
 
+    private List<Document> wordsList = new ArrayList<>();
     public void addCollection(String collectionName, MongoCollection<Document> collection) {
         collections.put(collectionName, collection);
+        if (collectionName.equals("words")) {
+            MongoCollection<Document> wordsColl = collections.get("words");
+            MongoCursor<Document> cursor = wordsColl.find().iterator();
+            try {
+                while (cursor.hasNext()) {
+                    wordsList.add(cursor.next());
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+    }
+
+    public MongoCollection<Document> getWordCollection() {
+        return collections.get("words");
+    }
+
+    public Document getRandomWord() {
+        Random rand = new Random();
+        return wordsList.get(rand.nextInt(wordsList.size()));
     }
 
     @Override
@@ -331,7 +350,6 @@ public class UserConnection extends Thread {
                     String account = data.get("account").getAsString();
                     String newEmail = data.get("email").getAsString();
                     String newPhoto = data.get("photo").getAsString();
-
                     Document docs = collections.get("users").find(eq("account", account)).first();
 
                     if (docs != null) {
@@ -358,6 +376,8 @@ public class UserConnection extends Thread {
                                     String.format("%s 修改資料成功！", account),
                                     returnData.toString()
                             );
+
+                            user = new User(account, newEmail, newPhoto);
 
                             send(returnMessage);
 
@@ -406,12 +426,18 @@ public class UserConnection extends Thread {
                         //change status then send back
                         message.setStatus(Message.Status.success);
                         message.setMsg(String.format("成功加入第 %s 號房間", data.get("roomId").getAsString()));
+                        RoomInformation roomInformation = userConnectionObserver.getRoomInformation(data.get("roomId").getAsInt());
+                        String roomInfoStr = gson.toJson(roomInformation);
+                        JsonObject returnData = gson.fromJson(roomInfoStr, JsonObject.class);
+                        returnData.addProperty("players", userConnectionObserver.getRoomPlayersData(data.get("roomId").getAsInt()));
+                        message.setData(returnData.toString());
+                        currentRoom = userConnectionObserver.getRoom(data.get("roomId").getAsInt());
                         send(message);
 
                     } else {
 
                         message.setStatus(Message.Status.failure);
-                        message.setMsg(String.format("加入第 %s 號房間失敗！原因：房間不存在！", data.get("roomId").getAsString()));
+                        message.setMsg(String.format("加入第 %s 號房間失敗！請稍後在試！", data.get("roomId").getAsString()));
                         send(message);
 
                     }
@@ -444,6 +470,8 @@ public class UserConnection extends Thread {
 
                         currentRoom = createdRoom;
                         data.addProperty("roomId", createdRoom.getRoomId());
+                        data.addProperty("roomCount", createdRoom.getRoomCount());
+                        data.addProperty("players", userConnectionObserver.getRoomPlayersData(createdRoom.getRoomId()));
                         message.setStatus(Message.Status.success);
                         message.setMsg("房間建立成功！準備進入房間！");
                         message.setData(data.toString());
@@ -467,9 +495,52 @@ public class UserConnection extends Thread {
 
                     message.setStatus(Message.Status.success);
                     message.setMsg("成功取得所有房間");
-                    message.setData(userConnectionObserver.onListRooms());
+                    JsonObject returnData = new JsonObject();
+                    returnData.addProperty("rooms", gson.toJson(userConnectionObserver.getRoomsList(), new TypeToken<List<RoomInformation>>() {}.getType()));
+                    message.setData(returnData.toString());
 
                     send(message);
+                }
+                break;
+
+            case leaveRoom:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+
+                    boolean result = userConnectionObserver.onLeaveRoom(this, data.get("roomId").getAsInt());
+
+                    if (result) {
+                        message.setStatus(Message.Status.success);
+                        message.setMsg("離開房間成功");
+                        currentRoom = null;
+                    } else {
+                        message.setStatus(Message.Status.failure);
+                        message.setMsg("離開房間失敗，請稍後在試");
+                    }
+
+                    send(message);
+                }
+
+                break;
+
+            case playerChat:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+                    currentRoom.onChat(message);
+                }
+                break;
+
+            case gameWordDes:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+                    currentRoom.onPlayerWordDes(message);
+                }
+                break;
+
+            case gamePlayerGuess:
+
+                if (message.getStatus().equals(Message.Status.process)) {
+                    currentRoom.onVote(message);
                 }
                 break;
         }

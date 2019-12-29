@@ -1,4 +1,4 @@
-package com.whoisspy.client.game;
+package com.whoisspy.client.lobby;
 
 import com.whoisspy.ImageExtensions;
 import com.whoisspy.ImagePanel;
@@ -13,12 +13,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 public class ProfilePanel extends JPanel {
 
@@ -90,7 +85,7 @@ public class ProfilePanel extends JPanel {
         profilePhotoPanel.setLocation(45, 80);
         profilePhotoPanel.setSize(150, 200);
         profilePhotoPanel.setLayout(null);
-        Image photo = user.getPhoto();
+        Image photo = ImageExtensions.base64StringToImage(user.getPhotoBase64());
         if (photo != null) {
             ImagePanel imagePanel = ImageExtensions.scaleImage(photo, profilePhotoPanel);
             profilePhotoPanel.add(imagePanel);
@@ -197,7 +192,7 @@ public class ProfilePanel extends JPanel {
                         ImageExtensions.ImageToBase64(imageFileName));
             } else {
                 profilePanelObserver.OnClickedSaveBtn(emailTextField.getText(),
-                        ImageExtensions.ImageToBase64(user.getPhoto()));
+                        user.getPhotoBase64());
             }
 
         }

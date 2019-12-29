@@ -1,13 +1,10 @@
 package com.whoisspy.server;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.whoisspy.Room;
 import com.whoisspy.RoomInformation;
-import com.whoisspy.User;
 
 import java.util.*;
 
@@ -44,10 +41,17 @@ public class RoomsManager {
         return createdRoom;
     }
 
+    public RoomInformation getRoomInformation(int roomId) {
+        if (rooms.containsKey(roomId)) {
+            return rooms.get(roomId).getRoomInformation();
+        } else {
+            return null;
+        }
+    }
+
     public boolean joinRoom(UserConnection roomPlayer, Integer destRoomId) {
         if (rooms.containsKey(destRoomId)) {
-            rooms.get(destRoomId).addPlayer(roomPlayer);
-            return true;
+            return rooms.get(destRoomId).addPlayer(roomPlayer);
         } else {
             return false;
         }
@@ -56,38 +60,47 @@ public class RoomsManager {
     public boolean leaveRoom(UserConnection roomPlayer, Integer roomId) {
         if (rooms.containsKey(roomId)) {
             Room room = rooms.get(roomId);
-            room.removePlayer(roomPlayer);
-            if (room.getRoomClientCount() == 0) {
+            if (room.getRoomCount()-1 == 0) {
+                room.removePlayer(roomPlayer);
                 return deleteRoom(roomId);
+            } else {
+                return room.removePlayer(roomPlayer);
             }
-            return true;
         } else {
             return false;
         }
     }
 
-    public String listRooms() {
+    public List<RoomInformation> getRoomsList() {
 
-        JsonObject roomsData = new JsonObject();
         List<RoomInformation> roomInformationList = new ArrayList<>();
         if (rooms.size() != 0) {
             for (Room room : rooms.values()) {
-                roomInformationList.add(room.getRoomInformation());
+                if (room.getRoomCount() < room.getRoomAmount()) {
+                    roomInformationList.add(room.getRoomInformation());
+                }
             }
         } else {
-            return "";
+            return new ArrayList<RoomInformation>();
         }
 
-        roomsData.addProperty("rooms", gson.toJson(roomInformationList, new TypeToken<List<RoomInformation>>() {}.getType()));
-        return gson.toJson(roomsData);
+        return roomInformationList;
 
+    }
+
+    public String getRoomPlayersData(int roomId) {
+        if (rooms.get(roomId) != null) {
+            return rooms.get(roomId).getAllPlayerData();
+        } else {
+            return "[{}]";
+        }
     }
 
     public boolean forceLeaveRoom(String account) {
         for (Room room : rooms.values()) {
             if (room.getClients().containsKey(account)) {
                 room.removePlayer(room.getClients().get(account));
-                if (room.getRoomClientCount() == 0) {
+                if (room.getRoomCount() == 0) {
                     return deleteRoom(room.getRoomId());
                 }
                 return true;
@@ -119,4 +132,7 @@ public class RoomsManager {
     }
 
 
+    public Room getRoom(int roomId) {
+        return rooms.getOrDefault(roomId, null);
+    }
 }

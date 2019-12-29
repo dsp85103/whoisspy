@@ -1,6 +1,9 @@
 package com.whoisspy.server;
 
 import com.whoisspy.Room;
+import com.whoisspy.RoomInformation;
+
+import java.util.List;
 
 public interface UserConnectionObserver {
     Room onCreateRoom(UserConnection roomOwner,
@@ -16,9 +19,15 @@ public interface UserConnectionObserver {
     boolean onDeleteRoom(UserConnection roomOwner,
                          int roomId);
 
-    boolean onLeaveRoom(UserConnection roomPlayer);
+    RoomInformation getRoomInformation(int roomId);
 
-    String onListRooms();
+    boolean onLeaveRoom(UserConnection roomPlayer, int roomId);
+
+    Room getRoom(int roomId);
+
+    List<RoomInformation> getRoomsList();
+
+    String getRoomPlayersData(int roomId);
 
     boolean onChangeRoomOwner(UserConnection roomOwner, UserConnection roomNewOwner);
 

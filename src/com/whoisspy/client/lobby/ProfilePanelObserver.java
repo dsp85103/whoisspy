@@ -1,4 +1,4 @@
-package com.whoisspy.client.game;
+package com.whoisspy.client.lobby;
 
 public interface ProfilePanelObserver {
     void OnClickedModifyPasswordBtn();
