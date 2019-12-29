@@ -2,8 +2,12 @@ package com.whoisspy.client;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.whoisspy.*;
-import com.whoisspy.client.game.*;
+import com.whoisspy.client.game.PlayerData;
+import com.whoisspy.client.game.RoomPanel;
+import com.whoisspy.client.game.RoomPanelObserver;
+import com.whoisspy.client.lobby.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,6 +17,7 @@ import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 public class Client {
 
@@ -28,6 +33,9 @@ public class Client {
 
     private JButton goHomeBtn;
     private JButton logoutBtn;
+
+    private RoomPanel roomPanel;
+    private boolean isPlaying = false;
 
     private SocketClient socketClient;
     private Gson gson = new Gson();
@@ -65,19 +73,25 @@ public class Client {
 
         initFrame.add(goHomeBtn);
 
-        if (!isLogin) {
-            initFrame.remove(logoutBtn);
-            // not login
-            HomePanel homePanel = new HomePanel(homePanelObserver);
-            initFrame.setTitle(title + " ver " + version);
-            initFrame.setContentBodyPanel("誰是臥底", homePanel);
+        if (!isPlaying) {
+            if (!isLogin) {
+                initFrame.remove(logoutBtn);
+                // not login
+                HomePanel homePanel = new HomePanel(homePanelObserver);
+                initFrame.setTitle(title + " ver " + version);
+                initFrame.setContentBodyPanel("誰是臥底", homePanel);
+            } else {
+                // was login
+                LobbyPanel lobbyPanel = new LobbyPanel(lobbyPanelObserver);
+                initFrame.add(logoutBtn);
+                initFrame.setTitle(title + " ver " + version + "  玩家：" + user.getAccount());
+                initFrame.setContentBodyPanel("誰是臥底", lobbyPanel);
+            }
         } else {
-            // was login
-            LobbyPanel lobbyPanel = new LobbyPanel(lobbyPanelObserver);
-            initFrame.add(logoutBtn);
-            initFrame.setTitle(title + " ver " + version + "  玩家：" + user.getAccount());
-            initFrame.setContentBodyPanel("誰是臥底", lobbyPanel);
+            initFrame.remove(goHomeBtn);
+            initFrame.remove(logoutBtn);
         }
+
 
         initFrame.repaint();
     }
@@ -207,7 +221,7 @@ public class Client {
                         //修改成功 維持登入狀態 並更新 user object
                         user.setAccount(data.get("account").getAsString());
                         user.setEmail(data.get("email").getAsString());
-                        user.setPhoto(ImageExtensions.base64StringToImage(data.get("photo").getAsString()));
+                        user.setPhotoBase64(data.get("photo").getAsString());
                         changeLoginStatus(true, user.getAccount(), user);
 
                     } else if (message.getStatus().equals(Message.Status.failure)) {
@@ -228,7 +242,19 @@ public class Client {
                         logger.log(String.format("join room %s successful", data.get("roomId").getAsString()));
                         ShowMessageBox(message.getMsg(), JOptionPane.INFORMATION_MESSAGE);
 
-                        //
+                        //建立房間成功，等待 Server 將訊息送過來
+                        ArrayList<PlayerData> playerDataArrayList = gson.fromJson(data.get("players").getAsString(),
+                                new TypeToken<ArrayList<PlayerData>>() {
+                                }.getType());
+
+                        //把players欄位移除才轉換成room information
+                        data.remove("players");
+                        RoomInformation roomInformation = gson.fromJson(message.getData(), RoomInformation.class);
+
+                        roomPanel = new RoomPanel(roomPanelObserver, roomInformation, playerDataArrayList);
+                        initFrame.setContentBodyPanel("", roomPanel);
+                        isPlaying = true;
+                        setupHomePanel(); // 更新左上角按鈕狀態
 
                     } else if (message.getStatus().equals(Message.Status.failure)) {
 
@@ -245,9 +271,20 @@ public class Client {
 
                         logger.log(String.format("create room successful, room id is %s", data.get("roomId").getAsString()));
                         ShowMessageBox(message.getMsg(), JOptionPane.INFORMATION_MESSAGE);
-                        System.out.println(data.toString());
-                        //建立房間成功
-                        // TODO 顯示房間畫面
+
+                        //建立房間成功，等待 Server 將訊息送過來
+                        ArrayList<PlayerData> playerDataArrayList = gson.fromJson(data.get("players").getAsString(),
+                                new TypeToken<ArrayList<PlayerData>>() {
+                                }.getType());
+
+                        //把players欄位移除才轉換成room information
+                        data.remove("players");
+                        RoomInformation roomInformation = gson.fromJson(message.getData(), RoomInformation.class);
+
+                        roomPanel = new RoomPanel(roomPanelObserver, roomInformation, playerDataArrayList);
+                        initFrame.setContentBodyPanel("", roomPanel);
+                        isPlaying = true;
+                        setupHomePanel(); // 更新左上角按鈕狀態
 
                     } else if (message.getStatus().equals(Message.Status.failure)) {
 
@@ -265,18 +302,46 @@ public class Client {
                         logger.log("list rooms successful");
                         ShowMessageBox(message.getMsg(), JOptionPane.INFORMATION_MESSAGE);
 
-                        if (data != null) {
+                        if (data.get("rooms").getAsString().length() > 2) {
 
                             ListRoomPanel listRoomPanel = new ListRoomPanel(listRoomPanelObserver, data);
                             initFrame.setContentBodyPanel("所有房間", listRoomPanel);
 
-                        } else {
+                        } else {  //data.get("rooms").getAsString() is []
 
                             logger.log("no room online");
-                            ShowMessageBox("線上沒有任何房間", JOptionPane.WARNING_MESSAGE);
+                            ShowMessageBox("抱歉～目前沒有有空位的房間", JOptionPane.WARNING_MESSAGE);
 
+                            LobbyPanel lobbyPanel = new LobbyPanel(lobbyPanelObserver);
+                            initFrame.setContentBodyPanel("誰是臥底", lobbyPanel);
                         }
                     }
+                    break;
+
+                case leaveRoom:
+
+                    if (message.getStatus().equals(Message.Status.success)) {
+
+                        logger.log("leave room successful");
+                        ShowMessageBox(message.getMsg(), JOptionPane.INFORMATION_MESSAGE);
+
+                        //更新左上角按鈕狀態
+                        roomPanel = null;
+                        isPlaying = false;
+                        setupHomePanel();
+
+                    } else if (message.getStatus().equals(Message.Status.failure)) {
+
+                        logger.log("leave room failure");
+                        ShowMessageBox(message.getMsg(), JOptionPane.WARNING_MESSAGE);
+
+                    }
+                    break;
+
+                default:
+                    if (roomPanel != null)
+                        roomPanel.onMessaged(message);
+                    break;
             }
         }
     };
@@ -481,7 +546,7 @@ public class Client {
             if (!roomName.equals("")) {
 
                 int amount = tryIntParse(roomAmount, 0);
-                if (amount > 0 && amount <= 10) {   // 1~10 人數
+                if (amount > 1 && amount <= 6) {   // 2~6 人數
 
                     if (roomPrivate && !roomPassword.equals("")) {
                         // 需要設定密碼 私人房間
@@ -520,9 +585,8 @@ public class Client {
                     }
 
                 } else {  // 數量為零，輸入格式錯誤
-                    ShowMessageBox("房間人數格式錯誤，請輸入大於零小於十的數字格式", JOptionPane.WARNING_MESSAGE);
+                    ShowMessageBox("房間人數格式錯誤，請輸入大於一小於等於六的數字格式", JOptionPane.WARNING_MESSAGE);
                 }
-
 
             } else {
 
@@ -530,7 +594,6 @@ public class Client {
 
             }
         }
-
 
     };
 
@@ -541,7 +604,7 @@ public class Client {
             JsonObject data = new JsonObject();
             data.addProperty("roomId", roomId);
             Message message = new Message(Message.OP.joinRoom, Message.Status.process, "joinRoom", data.toString());
-            logger.log(String.format("join room %s",roomId));
+            logger.log(String.format("join room %s", roomId));
 
             socketClient.send(message);
         }
@@ -552,6 +615,44 @@ public class Client {
             lobbyPanelObserver.OnClickedListRoomBtn();
         }
     };
+
+    public RoomPanelObserver roomPanelObserver = new RoomPanelObserver() {
+        @Override
+        public void onChatSend(String chatText) {
+            JsonObject data = new JsonObject();
+            data.addProperty("account", user.getAccount());
+            data.addProperty("chat", chatText);
+            Message message = new Message(Message.OP.playerChat, Message.Status.process, user.getAccount(), data.toString());
+            socketClient.send(message);
+        }
+
+        @Override
+        public void onLeaveRoom(int roomId) {
+            JsonObject data = new JsonObject();
+            data.addProperty("roomId", roomId);
+            Message message = new Message(Message.OP.leaveRoom, Message.Status.process, "leaveRoom", data.toString());
+            socketClient.send(message);
+        }
+
+        @Override
+        public void onGameWordDes(String description) {
+            JsonObject data = new JsonObject();
+            data.addProperty("account", user.getAccount());
+            data.addProperty("des", description);
+            Message message = new Message(Message.OP.gameWordDes, Message.Status.process, "gameWordDes", data.toString());
+            socketClient.send(message);
+        }
+
+        @Override
+        public void onVote(String votedPlayer) {
+            JsonObject data = new JsonObject();
+            data.addProperty("account", user.getAccount());
+            data.addProperty("guess", votedPlayer);
+            Message message = new Message(Message.OP.gamePlayerGuess, Message.Status.process, "gamePlayerGuess", data.toString());
+            socketClient.send(message);
+        }
+    };
+
 
     public ActionListener goHomeBtnActionListener = e -> setupHomePanel();
 
