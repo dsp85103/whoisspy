@@ -1,10 +1,11 @@
-package com.whoisspy.client.game;
+package com.whoisspy.client.lobby;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.whoisspy.RoomInformation;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -42,7 +43,9 @@ public class ListRoomPanel extends JPanel {
                 return new Dimension(300, 100);
             }
         };
-
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        roomsTable.setDefaultRenderer(String.class, centerRenderer);
         roomsTable.setFont(tableFont);
         roomsTable.addMouseListener(roomsTableMouseListener);
 
@@ -97,7 +100,18 @@ public class ListRoomPanel extends JPanel {
     public ActionListener joinRoomBtnActionListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            listRoomPanelObserver.onClickedJoinRoomBtn(roomsTableModel.getSelectedRoomId(roomsTable.getSelectedRow()).toString());
+            String roomId = roomsTableModel.getSelectedRoomId(roomsTable.getSelectedRow()).toString();
+            if (roomsTableModel.isPrivateRoom(roomsTable.getSelectedRow())) {
+                String userInput = JOptionPane.showInputDialog(null, "請輸入房間密碼",roomId + " 房間", JOptionPane.QUESTION_MESSAGE);
+                if (!roomsTableModel.checkRoomPassword(roomsTable.getSelectedRow(), userInput)) {
+                    JOptionPane.showMessageDialog(null, "房間密碼輸入錯誤！", roomId + " 房間", JOptionPane.WARNING_MESSAGE);
+                    listRoomPanelObserver.onRefreshRooms();
+                } else {
+                    listRoomPanelObserver.onClickedJoinRoomBtn(roomId);
+                }
+            } else {
+                listRoomPanelObserver.onClickedJoinRoomBtn(roomId);
+            }
         }
     };
 

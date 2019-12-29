@@ -1,15 +1,17 @@
-package com.whoisspy.client.game;
+package com.whoisspy.client.lobby;
 import com.whoisspy.RoomInformation;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 
 public class RoomsTableModel extends AbstractTableModel {
 
     private List<RoomInformation> roomsData = new ArrayList<RoomInformation>();
     private String[] columnNames =  {"房號", "名稱", "人數", "描述", "私人?"};
+    private static final Class<?>[] COLUMN_TYPES = new Class<?>[] {String.class, String.class, String.class,  String.class,  String.class};
 
     public RoomsTableModel(List<RoomInformation> roomsData) {
         this.roomsData = roomsData;
@@ -28,6 +30,11 @@ public class RoomsTableModel extends AbstractTableModel {
     @Override
     public int getRowCount() {
         return roomsData.size();
+    }
+
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        return COLUMN_TYPES[columnIndex];
     }
 
     @Override
@@ -52,5 +59,18 @@ public class RoomsTableModel extends AbstractTableModel {
     public void addRoom(RoomInformation room) {
         roomsData.add(room);
         fireTableDataChanged();
+    }
+
+    public boolean isPrivateRoom(int row) {
+        return roomsData.get(row).isRoomPrivate();
+    }
+
+    public boolean checkRoomPassword(int row, String userInput) {
+        String password = roomsData.get(row).getRoomPassword();
+        if (userInput.equals(password)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
