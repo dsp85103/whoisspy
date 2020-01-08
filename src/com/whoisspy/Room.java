@@ -162,7 +162,7 @@ public class Room {
                                 message.setOp(Message.OP.gameVote);
                                 message.setMsg("開始投票！您覺得誰是臥底呢？");
                                 JsonObject returnData = new JsonObject();
-                                returnData.addProperty("votedPlayer", gson.toJson(getVotedPlayerList()));
+                                returnData.addProperty("votedPlayer", gson.toJson(getAlivePlayerList()));
                                 message.setData(returnData.toString());
                                 notifyAlivePlayerMessage(message);
 
@@ -228,6 +228,7 @@ public class Room {
 
                                     //更新死亡玩家狀態 狀態->死亡 票數歸零
                                     playerDataMap.get(guessedPlayer).setPlayerStatus("死亡");
+                                    playerDataMap.get(guessedPlayer).setPlayerText("");
                                     playerDataMap.get(guessedPlayer).setPlayerVotes(0);
                                     notifyAllPlayerDataChanged();
                                     Thread.sleep(5000);
@@ -242,29 +243,36 @@ public class Room {
                                 notifyAllPlayerMessage(message);
                                 Thread.sleep(5000);
                                 break;
-                            } else {
-                                if (getCount("平民", "存活") > 0 && round == getRoomAmount()) {
-                                    logger.log("平民勝利");
-                                    message.setOp(Message.OP.gameRoundWait);
-                                    message.setMsg("平民大獲全勝！臥底要在好好學習！");
-                                    notifyAllPlayerMessage(message);
-                                    Thread.sleep(5000);
-                                    break;
-                                } else if (getCount("平民", "存活") > 0 && round < getRoomAmount()) {
-                                    logger.log("五秒後開始下一回合");
-                                    message.setOp(Message.OP.gameRoundWait);
-                                    message.setMsg("臥底很會藏！將於 5 秒後開始下一回合");
-                                    notifyAllPlayerMessage(message);
-                                    Thread.sleep(5000);
-                                } else {
-                                    logger.log("平民被殺光了");
-                                    message.setOp(Message.OP.gameRoundOver);
-                                    message.setMsg("平民都死光了，臥底徹底稱霸世界了！");
-                                    notifyAllPlayerMessage(message);
-                                    Thread.sleep(5000);
-                                    break;
-                                }
+                            } else if (getCount("平民", "存活") == 1) {
+                                logger.log("只剩一位平民，遊戲結束");
+                                message.setOp(Message.OP.gameRoundOver);
+                                message.setMsg("僅存一位平民，世界幾乎被臥底稱霸了...");
+                                notifyAllPlayerMessage(message);
+                                Thread.sleep(5000);
+                                break;
+                            } else if (getCount("臥底", "存活") == 0) {
+                                logger.log("平民勝利");
+                                message.setOp(Message.OP.gameRoundWait);
+                                message.setMsg("平民大獲全勝！臥底要在好好學習！");
+                                notifyAllPlayerMessage(message);
+                                Thread.sleep(5000);
+                                break;
+                            } else if (getCount("平民", "存活") > 1 && round < getRoomAmount()) {
+                                logger.log("五秒後開始下一回合");
+                                message.setOp(Message.OP.gameRoundWait);
+                                message.setMsg("臥底很會藏！將於 5 秒後開始下一回合");
+                                notifyAllPlayerMessage(message);
+                                Thread.sleep(5000);
                             }
+//                            else if (getCount("平民", "存活") == 0) {
+////                                logger.log("平民被殺光了");
+////                                message.setOp(Message.OP.gameRoundOver);
+////                                message.setMsg("平民都死光了，臥底徹底稱霸世界了！");
+////                                notifyAllPlayerMessage(message);
+////                                Thread.sleep(5000);
+////                                break;
+////                            }
+
                         } //回合 loop
 
                         //遊戲結束
@@ -454,6 +462,16 @@ public class Room {
             }
         }
         return votesPlayerList;
+    }
+
+    public ArrayList<String> getAlivePlayerList() {
+        ArrayList<String> alivePlayerList = new ArrayList<>();
+        for (PlayerData playerData : playerDataMap.values()) {
+            if (!playerData.getPlayerStatus().equals("死亡")) {
+                alivePlayerList.add(playerData.getPlayerProfile().getAccount());
+            }
+        }
+        return alivePlayerList;
     }
 
     public int getCount(String type, String status) {
